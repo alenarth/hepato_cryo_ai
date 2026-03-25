@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 text-center">
+        <h1 class="fw-bold text-primary">Scientific Analysis and Validation</h1>
+        <p class="text-muted lead">Performance comparison between AI model predictions and empirical laboratory data.</p>
+    </div>
+</div>
+
+<div class="row justify-content-center mb-5">
+    <div class="col-lg-11">
+        <h3 class="border-bottom pb-2 mb-4 text-secondary">1. Random Forest Algorithm Performance</h3>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Model Fit (Actual vs. Predicted)</h5>
+                        <p class="text-muted small mb-4">Scatter plot showing the correlation between observed in vitro viability and AI-predicted viability.</p>
+                        
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/real_vs_pred.png') }}" alt="Actual vs Predicted Plot" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Actual vs Predicted Plot here]</span>'">
+                        </div>
+                        
+                        <p class="small text-justify"><strong>Interpretation:</strong> The closeness of the points to the diagonal reference line demonstrates the model's high coefficient of determination (R² = 0.979), confirming that the AI generalizes well and accurately predicts hepatocyte survival with a minimal error margin (RMSE = 4.99%).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Survival Zones (Heatmap)</h5>
+                        <p class="text-muted small mb-4">Predictive mapping of all possible interactions between DMSO and trehalose concentrations.</p>
+                        
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/heatmap_viability.png') }}" alt="Viability Heatmap" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Heatmap here]</span>'">
+                        </div>
+                        
+                        <p class="small text-justify"><strong>Interpretation:</strong> The lighter areas indicate the optimal cryopreservation points discovered by the AI. The toxicity threshold is visually apparent, where excessive cryoprotectant concentrations lead to a sharp drop in estimated cell viability.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-11">
+        <h3 class="border-bottom pb-2 mb-4 text-secondary">2. Empirical Foundation (HepG2 Cells)</h3>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary fw-bold">Figure 1: Effect of DMSO Alone</h5>
+                        <div class="bg-light p-3 text-center rounded mb-3 border" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/figura1.png') }}" class="img-fluid rounded" alt="DMSO Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert DMSO Plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing DMSO concentrations. HepG2 cells were frozen with 0–100% DMSO, thawed after 7 days, and viability assessed via trypan blue exclusion and MTT assays. Data represent mean ± SD from 6–15 samples per concentration (n=1–3 independent experiments). Statistical analysis used two-way ANOVA with Sidak post-test. Asterisks denote p&lt;0.0001; “ns” indicates non-significant.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary fw-bold">Figure 2: Effect of Trealose Alone</h5>
+                        <div class="bg-light p-3 text-center rounded mb-3 border" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/figura2.png') }}" class="img-fluid rounded" alt="Trealose Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Trealose Plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing trehalose concentrations. HepG2 cells were frozen with 20–100% trehalose, thawed after 7 days, and viability assessed using trypan blue exclusion and MTT. Data show mean ± SD from 4–5 samples per concentration (n=1–2 independent experiments).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-2 mb-5">
+            <div class="col-md-10">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary fw-bold text-center">Figure 3: Combined Effect (DMSO + Trealose)</h5>
+                        <div class="bg-light p-4 text-center rounded mb-3 border mx-auto" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/figura3.png') }}" class="img-fluid rounded" alt="Combined Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Combined Plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing combinations of dimethyl sulfoxide and trehalose. HepG2 cells were frozen with 5% or 10% DMSO (D) and 5–30% trehalose (T). After 7 days, cells were thawed and viability was measured by trypan blue exclusion and MTT assays. Values represent mean ± SD from 2–7 samples per trehalose concentration (n=1 independent experiment).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-5">
+                <h1 class="display-5 fw-bold text-center mb-3">HepatoCryoAI</h1>
+                <h4 class="text-center text-muted mb-5">Predictive tool for hepatocyte viability after cryopreservation</h4>
+                
+                <p class="lead">Chronic liver diseases represent a major public health burden, with cirrhosis being the leading cause of hospitalizations and mortality in Brazil. Liver transplantation remains the only effective therapy, but the shortage of available organs versus rising demand highlights the need for alternatives such as human hepatocyte cell therapy. The main limitation of this approach is the loss of cell viability and functionality after thawing, underscoring the importance of optimized cryopreservation protocols.</p>
+                
+                <p></p>
+                
+                <h3 class="mt-4 text-primary">Objective</h3>
+                <p>HepatoCryoAI aims to support the optimization of hepatocyte cryopreservation protocols through machine learning algorithms that predict reductions in cell viability under various experimental conditions. In this way, it acts as an intelligent calculator, allowing protocol simulation and estimation of post-thaw viability.</p>
+
+                <h3 class="mt-4 text-primary">Perspectives</h3>
+                <p>The application of HepatoCryoAI could contribute to the establishment of viable hepatocyte banks for clinical use, expand cell therapy as an alternative to liver transplantation, and drive significant advances in regenerative medicine and the treatment of chronic liver diseases.</p>
+
+                <div class="alert alert-warning mt-5 shadow-sm" role="alert">
+                    <h5 class="alert-heading fw-bold">⚠️ IMPORTANT! Disclaimer</h5>
+                    <p class="mb-0">HepatoCryoAI is provided solely as a complementary research tool. Results from this simulation should not replace rigorous <em>in vitro</em> and <em>in vivo</em> laboratory validation protocols. Responsibility for decisions based on this tool lies entirely with the researcher and their institution.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

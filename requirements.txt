@@ -6,3 +6,4 @@ joblib
 seaborn
 matplotlib
 xgboost
+torch

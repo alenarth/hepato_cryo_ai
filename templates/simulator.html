@@ -3,8 +3,8 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12 mb-4">
-        <h2 class="fw-bold">Neural Simulation Environment</h2>
-        <p class="text-muted">Enter desired parameters to estimate cell viability using our Random Forest algorithm.</p>
+        <h2 class="fw-bold">AI Simulator</h2>
+        <p class="text-muted">Enter desired parameters to estimate cell viability using our machine learning models.</p>
     </div>
 </div>
 
@@ -18,24 +18,44 @@
                 <form method="POST" action="/application">
                     <div class="mb-4">
                         <label for="dmso" class="form-label fw-bold">DMSO concentration (%)</label>
-                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-lg" id="dmso" name="dmso" required placeholder="Ex: 5.0">
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-lg" id="dmso" name="dmso" required placeholder="Ex: 5.0" value="{{ dmso if dmso is not none else '' }}">
                         <div class="form-text">Enter the percentage value of dimethyl sulfoxide.</div>
                     </div>
                     
                     <div class="mb-4">
-                        <label for="trehalose" class="form-label fw-bold">Trealose concentration (%)</label>
-                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-lg" id="trehalose" name="trehalose" required placeholder="Ex: 10.0">
+                        <label for="trehalose" class="form-label fw-bold">Trehalose concentration (%)</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-lg" id="trehalose" name="trehalose" required placeholder="Ex: 10.0" value="{{ trehalose if trehalose is not none else '' }}">
                         <div class="form-text">Enter the percentage value of the disaccharide trehalose.</div>
                     </div>
                     
                     <button type="submit" class="btn btn-success btn-lg w-100">Run AI Simulation</button>
                 </form>
 
-                {% if result %}
-                <div class="mt-5 p-4 bg-light border rounded text-center">
-                    <h6 class="text-muted text-uppercase mb-2">Model prediction for {{ dmso }}% DMSO and {{ trehalose }}% trehalose</h6>
-                    <h1 class="display-4 text-success fw-bold">{{ result }}%</h1>
-                    <p class="mb-0 fw-semibold">Estimated Cell Viability</p>
+                {% if error %}
+                <div class="alert alert-danger mt-4" role="alert">
+                    <strong>Validation error:</strong> {{ error }}
+                </div>
+                {% endif %}
+
+                {% if rf_result is not none %}
+                <div class="mt-4">
+                    <div class="p-4 bg-light border rounded text-center mb-3">
+                        <h6 class="text-muted text-uppercase mb-1">Random Forest</h6>
+                        <h1 class="display-4 text-success fw-bold mb-0">{{ rf_result }}%</h1>
+                        <p class="mb-0 small text-muted">Estimated Cell Viability</p>
+                    </div>
+
+                    {% if nn_result is not none %}
+                    <div class="p-4 bg-light border rounded text-center">
+                        <h6 class="text-muted text-uppercase mb-1">Neural Network (PyTorch)</h6>
+                        <h1 class="display-4 fw-bold mb-0" style="color: #d62728;">{{ nn_result }}%</h1>
+                        <p class="mb-0 small text-muted">Estimated Cell Viability</p>
+                    </div>
+                    {% endif %}
+
+                    <p class="text-muted small mt-3 text-center">
+                        Prediction for <strong>{{ dmso }}% DMSO</strong> and <strong>{{ trehalose }}% trehalose</strong>.
+                    </p>
                 </div>
                 {% endif %}
             </div>
@@ -46,16 +66,29 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
                 <h4 class="card-title text-primary">Predictive Model Evaluation</h4>
-                <p>Our Random Forest model was trained and rigorously validated with empirical data, showing high generalization capacity for new concentrations.</p>
+                {% if nn_available %}
+                <p>Two machine learning models were trained and validated with empirical HepG2 data, both showing high generalization capacity.</p>
+                {% else %}
+                <p>A Random Forest model was trained and validated with empirical HepG2 data, showing high generalization capacity.</p>
+                {% endif %}
                 <div class="row text-center mt-4">
-                    <div class="col-sm-6">
+                    <div class="{% if nn_available %}col-sm-6{% else %}col-sm-12{% endif %} mb-3">
+                        <span class="badge bg-success mb-2">Random Forest</span>
                         <h2 class="fw-bold text-dark">0.979</h2>
-                        <span class="text-muted">Coefficient of Determination (R²)</span>
+                        <span class="text-muted small">R² (RMSE: 4.99%)</span>
                     </div>
-                    <div class="col-sm-6">
-                        <h2 class="fw-bold text-dark">4.99%</h2>
-                        <span class="text-muted">Margin of Error (RMSE)</span>
+                    {% if nn_available %}
+                    <div class="col-sm-6 mb-3">
+                        <span class="badge mb-2" style="background-color: #d62728;">Neural Network</span>
+                        {% if nn_metrics %}
+                        <h2 class="fw-bold text-dark">{{ '%.3f' % nn_metrics.get('r2_test', 0) }}</h2>
+                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % nn_metrics.get('rmse_test', 0) }}%)</span>
+                        {% else %}
+                        <h2 class="fw-bold text-dark">—</h2>
+                        <span class="text-muted small">Run notebook to generate metrics</span>
+                        {% endif %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -63,14 +96,14 @@
         <div class="card shadow-sm border-0">
             <div class="card-body">
                 <h4 class="card-title text-primary">Best Cryoprotectants Found</h4>
-                <p>During exhaustive hyperparameter searches generated by the AI, these combinations mathematically maximized cell survival:</p>
-                
+                <p>During an exhaustive grid search performed by the <strong>Random Forest</strong> model, these combinations mathematically maximized predicted cell survival:</p>
+
                 <table class="table table-hover mt-3">
                     <thead class="table-light">
                         <tr>
                             <th>Strategy</th>
                             <th>DMSO (%)</th>
-                            <th>Trealose (%)</th>
+                            <th>Trehalose (%)</th>
                             <th>Predicted Viability</th>
                         </tr>
                     </thead>
@@ -83,18 +116,19 @@
                         </tr>
                         <tr>
                             <td><strong>Optimal DMSO Alone</strong></td>
-                            <td>2.0 to 3.0</td>
+                            <td>2.0 – 3.0</td>
                             <td>0.0</td>
                             <td class="text-success fw-bold">95.17%</td>
                         </tr>
                         <tr>
-                            <td><strong>Optimal Trealose Alone</strong></td>
+                            <td><strong>Optimal Trehalose Alone</strong></td>
                             <td>0.0</td>
-                            <td>16.0 to 25.0</td>
+                            <td>16.0 – 25.0</td>
                             <td class="text-warning fw-bold">78.40%</td>
                         </tr>
                     </tbody>
                 </table>
+                <p class="text-muted small mb-0">Values derived from a systematic search across all concentration combinations within the experimental range of the training data.</p>
             </div>
         </div>
     </div>

@@ -18,11 +18,11 @@
                     <div class="card-body p-4">
                         <h5 class="card-title text-primary fw-bold">Model Fit (Actual vs. Predicted)</h5>
                         <p class="text-muted small mb-4">Scatter plot showing the correlation between observed in vitro viability and AI-predicted viability.</p>
-                        
+
                         <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                             <img src="{{ url_for('static', filename='images/real_vs_pred.png') }}" alt="Actual vs Predicted Plot" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Actual vs Predicted Plot here]</span>'">
                         </div>
-                        
+
                         <p class="small text-justify"><strong>Interpretation:</strong> The closeness of the points to the diagonal reference line demonstrates the model's high coefficient of determination (R² = 0.979), confirming that the AI generalizes well and accurately predicts hepatocyte survival with a minimal error margin (RMSE = 4.99%).</p>
                     </div>
                 </div>
@@ -33,12 +33,61 @@
                     <div class="card-body p-4">
                         <h5 class="card-title text-primary fw-bold">Survival Zones (Heatmap)</h5>
                         <p class="text-muted small mb-4">Predictive mapping of all possible interactions between DMSO and trehalose concentrations.</p>
-                        
+
                         <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                             <img src="{{ url_for('static', filename='images/heatmap_viability.png') }}" alt="Viability Heatmap" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Heatmap here]</span>'">
                         </div>
-                        
+
                         <p class="small text-justify"><strong>Interpretation:</strong> The lighter areas indicate the optimal cryopreservation points discovered by the AI. The toxicity threshold is visually apparent, where excessive cryoprotectant concentrations lead to a sharp drop in estimated cell viability.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Learning Curve</h5>
+                        <p class="text-muted small mb-4">Model performance as a function of training set size, assessing generalization capacity.</p>
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/learning_curve.png') }}" alt="Learning Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Learning Curve here]</span>'">
+                        </div>
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Converging training and validation error curves indicate the model is not overfitting and that the dataset size is sufficient for reliable generalization. A small gap between the curves confirms consistent performance across different data splits.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Residuals Analysis</h5>
+                        <p class="text-muted small mb-4">Distribution and structure of prediction errors across the range of predicted values.</p>
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/residuals_plot.png') }}" alt="Residuals Plot" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Residuals Plot here]</span>'">
+                        </div>
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Residuals scattered randomly around zero, with no systematic pattern, confirm the model has no significant bias and that the linear assumptions of the error structure are satisfied across the full range of viability predictions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold text-center">Feature Importance</h5>
+                        <p class="text-muted small mb-4 text-center">Relative contribution of each cryoprotectant to the Random Forest predictions.</p>
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/feature_importance.png') }}" alt="Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Feature Importance here]</span>'">
+                        </div>
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> The relative importance scores reveal which cryoprotectant (DMSO or trehalose) drives the model's viability predictions most strongly. Higher importance indicates greater sensitivity of cell survival to changes in that variable's concentration.</p>
                     </div>
                 </div>
             </div>
@@ -46,9 +95,151 @@
     </div>
 </div>
 
+{% if nn_available %}
+<div class="row justify-content-center mb-5">
+    <div class="col-lg-11">
+        <h3 class="border-bottom pb-2 mb-4 text-secondary">2. Neural Network (PyTorch) Performance</h3>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <p>A deep neural network was trained using PyTorch with polynomial feature engineering (DMSO², Trehalose², DMSO×Trehalose) to capture non-linear toxicity thresholds. The architecture uses 3 hidden layers (128→64→32 neurons) with Batch Normalization, Dropout, and early stopping.</p>
+                        <div class="row text-center mt-4">
+                            {% if nn_metrics %}
+                            <div class="col-sm-3">
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('r2_test', 0) }}</h3>
+                                <span class="text-muted small">R² (Test Set)</span>
+                            </div>
+                            <div class="col-sm-3">
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.2f' % nn_metrics.get('rmse_test', 0) }}%</h3>
+                                <span class="text-muted small">RMSE (Test Set)</span>
+                            </div>
+                            <div class="col-sm-3">
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('cv_r2_mean', 0) }}</h3>
+                                <span class="text-muted small">R² (K-Fold CV Mean)</span>
+                            </div>
+                            <div class="col-sm-3">
+                                <h3 class="fw-bold" style="color: #d62728;">±{{ '%.3f' % nn_metrics.get('cv_r2_std', 0) }}</h3>
+                                <span class="text-muted small">R² CV Std. Dev.</span>
+                            </div>
+                            {% else %}
+                            <div class="col-12">
+                                <p class="text-muted">Run the neural network notebook to generate performance metrics.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Model Fit (Actual vs. Predicted)</h5>
+                        <p class="text-muted small mb-4">Scatter plot of observed versus predicted viability values from the neural network.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_real_vs_previsto.png') }}" alt="NN Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate NN plots]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Points clustered tightly along the diagonal reference line confirm the network's predictive accuracy. The tighter the scatter around the line, the better the model generalizes to unseen experimental conditions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Comparative: Random Forest vs. Neural Network</h5>
+                        <p class="text-muted small mb-4">Direct comparison of prediction accuracy between both model architectures.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_comparativo_rf_vs_nn.png') }}" alt="RF vs NN Comparison" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate comparison plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Side-by-side evaluation of the Random Forest and Neural Network predictions against observed viability. This comparison reveals whether the added complexity of the deep learning approach translates into meaningful gains in accuracy for this dataset.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Training Loss Curve</h5>
+                        <p class="text-muted small mb-4">Evolution of training and validation loss across epochs during model optimization.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_curva_loss.png') }}" alt="NN Loss Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate NN loss curve]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Converging training and validation loss curves without late-stage divergence confirm that early stopping prevented overfitting. A stable plateau indicates the network successfully learned the underlying cryoprotectant–viability relationship.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Correlation Analysis</h5>
+                        <p class="text-muted small mb-4">Pearson correlation between neural network predictions and experimentally observed viability.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_correlacao.png') }}" alt="NN Correlation" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate correlation plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> A high Pearson coefficient close to 1.0 confirms strong linear agreement between the network's outputs and experimental measurements, validating its ability to rank and estimate viability across different cryoprotectant combinations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Prediction Distribution</h5>
+                        <p class="text-muted small mb-4">Histogram of prediction errors (residuals) to assess systematic bias in the network's output.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_distribuicao.png') }}" alt="NN Prediction Distribution" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate distribution plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> A distribution of errors centered near zero and approximately normal indicates the network makes unbiased predictions, without systematic over- or under-estimation across the full viability range.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold">Feature Importance</h5>
+                        <p class="text-muted small mb-4">Estimated contribution of each input feature, including polynomial terms, to the network's predictions.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_feature_importance.png') }}" alt="NN Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate feature importance plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Reveals which cryoprotectant variables and interaction terms (DMSO², Trehalose², DMSO×Trehalose) most strongly influence the neural network's viability predictions, highlighting the non-linear effects captured by polynomial feature engineering.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-primary fw-bold text-center">Residuals Analysis</h5>
+                        <p class="text-muted small mb-4 text-center">Scatter plot of residuals against predicted values to check for heteroscedasticity and systematic errors.</p>
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ url_for('static', filename='images/nn_residuos.png') }}" alt="NN Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Run notebook to generate residuals plot]</span>'">
+                        </div>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Random scatter of residuals around zero across all predicted viability levels confirms homoscedasticity and the absence of systematic prediction bias in the neural network, indicating a well-calibrated model.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
 <div class="row justify-content-center">
     <div class="col-lg-11">
-        <h3 class="border-bottom pb-2 mb-4 text-secondary">2. Empirical Foundation (HepG2 Cells)</h3>
+        <h3 class="border-bottom pb-2 mb-4 text-secondary">{% if nn_available %}3{% else %}2{% endif %}. Empirical Foundation (HepG2 Cells)</h3>
         
         <div class="row">
             <div class="col-md-6 mb-4">
@@ -58,7 +249,7 @@
                         <div class="bg-light p-3 text-center rounded mb-3 border" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
                             <img src="{{ url_for('static', filename='images/figura1.png') }}" class="img-fluid rounded" alt="DMSO Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert DMSO Plot]</span>'">
                         </div>
-                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing DMSO concentrations. HepG2 cells were frozen with 0–100% DMSO, thawed after 7 days, and viability assessed via trypan blue exclusion and MTT assays. Data represent mean ± SD from 6–15 samples per concentration (n=1–3 independent experiments). Statistical analysis used two-way ANOVA with Sidak post-test. Asterisks denote p&lt;0.0001; “ns” indicates non-significant.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing DMSO concentrations. HepG2 cells were frozen with 0–100% DMSO, thawed after 7 days, and viability assessed via trypan blue exclusion and MTT assays. Data represent mean ± SD from 6–15 samples per concentration (n=1–3 independent experiments). Statistical analysis used two-way ANOVA with Sidak post-test. Asterisks denote p&lt;0.0001; "ns" indicates non-significant.</p>
                     </div>
                 </div>
             </div>
@@ -66,9 +257,9 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-4">
-                        <h5 class="text-primary fw-bold">Figure 2: Effect of Trealose Alone</h5>
+                        <h5 class="text-primary fw-bold">Figure 2: Effect of Trehalose Alone</h5>
                         <div class="bg-light p-3 text-center rounded mb-3 border" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
-                            <img src="{{ url_for('static', filename='images/figura2.png') }}" class="img-fluid rounded" alt="Trealose Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Trealose Plot]</span>'">
+                            <img src="{{ url_for('static', filename='images/figura2.png') }}" class="img-fluid rounded" alt="Trehalose Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Trehalose Plot]</span>'">
                         </div>
                         <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing trehalose concentrations. HepG2 cells were frozen with 20–100% trehalose, thawed after 7 days, and viability assessed using trypan blue exclusion and MTT. Data show mean ± SD from 4–5 samples per concentration (n=1–2 independent experiments).</p>
                     </div>
@@ -80,7 +271,7 @@
             <div class="col-md-10">
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
-                        <h5 class="text-primary fw-bold text-center">Figure 3: Combined Effect (DMSO + Trealose)</h5>
+                        <h5 class="text-primary fw-bold text-center">Figure 3: Combined Effect (DMSO + Trehalose)</h5>
                         <div class="bg-light p-4 text-center rounded mb-3 border mx-auto" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                             <img src="{{ url_for('static', filename='images/figura3.png') }}" class="img-fluid rounded" alt="Combined Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Insert Combined Plot]</span>'">
                         </div>

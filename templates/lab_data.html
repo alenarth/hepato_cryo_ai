@@ -1,0 +1,1188 @@
+{% extends 'base.html' %}
+
+
+
+
+
+
+
+{% block content %}
+
+
+
+<div class="row mb-5">
+
+
+
+    <div class="col-12 text-center">
+
+
+
+        <h1 class="fw-bold page-title">Scientific Analysis and Validation</h1>
+
+
+
+        <p class="text-muted lead">Performance comparison between AI model predictions and empirical laboratory data.</p>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+{# ============================================================ #}
+
+
+
+{# SECTION 1: EXPLORATORY DATA ANALYSIS                         #}
+
+
+
+{# ============================================================ #}
+
+
+
+
+
+
+
+<div class="row justify-content-center mb-5">
+
+
+
+    <div class="col-lg-11">
+
+
+
+        <h2 class="section-title border-bottom pb-2 mb-4">1. Exploratory Data Analysis</h2>
+
+
+
+
+
+
+
+        <div class="row">
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Variable Correlation Matrix</h4>
+
+
+
+                        <p class="text-muted small mb-4">Pearson correlation between input variables (DMSO, Trehalose, SFB) and viability.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_correlacao.png') }}" alt="Correlation Matrix" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Correlation matrix not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows moderate negative correlation with viability (r = −0.574), consistent with dose-dependent toxicity. Trehalose shows near-zero linear correlation (r = 0.003), reflecting a non-linear relationship captured by polynomial feature engineering. SFB's apparent positive correlation (r = 0.655) is confounded rather than causal: SFB acts as a balance/diluent variable (DMSO + Trehalose + SFB = 100% in 208/216 rows; 8 rows = 10%), and including it adds negligible predictive value to the RF model while inflating SFB's apparent feature importance at DMSO's expense. SFB is therefore excluded from the feature set.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Data Distribution</h4>
+
+
+
+                        <p class="text-muted small mb-4">Scatter plots of each cryoprotectant versus viability and histogram of viability distribution.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_distribuicao.png') }}" alt="Data Distribution" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Distribution plots not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows a clear toxicity threshold — viability drops sharply above ~25%. Trehalose displays a non-linear pattern: moderate concentrations are beneficial but excessive amounts are detrimental. The viability distribution is bimodal, with peaks near 0% and near 90–100%, reflecting the binary nature of cryopreservation outcomes.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+{# ============================================================ #}
+
+
+
+{# SECTION 2: RANDOM FOREST PERFORMANCE                        #}
+
+
+
+{# ============================================================ #}
+
+
+
+
+
+
+
+<div class="row justify-content-center mb-5">
+
+
+
+    <div class="col-lg-11">
+
+
+
+        <h2 class="section-title border-bottom pb-2 mb-4">2. Random Forest Algorithm Performance</h2>
+
+
+
+        
+
+
+
+        <div class="row">
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Model Fit (Actual vs. Predicted)</h4>
+
+
+
+                        <p class="text-muted small mb-4">Scatter plot of observed versus AI-predicted viability on the test set.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/real_vs_pred.png') }}" alt="Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Points clustered along the diagonal confirm the model's high R² = 0.980 and low error (RMSE = 5.02%), demonstrating accurate generalization to unseen data.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Survival Zones (Heatmap)</h4>
+
+
+
+                        <p class="text-muted small mb-4">Predictive mapping of all DMSO × trehalose concentration combinations.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/heatmap_viability.png') }}" alt="Viability Heatmap" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Heatmap not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Lighter areas indicate optimal cryopreservation zones. The toxicity threshold is visually apparent where excessive cryoprotectant concentrations lead to a sharp drop in estimated cell viability.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="row">
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Learning Curve</h4>
+
+
+
+                        <p class="text-muted small mb-4">Model performance as a function of training set size.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/learning_curve.png') }}" alt="Learning Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Converging training and cross-validation curves confirm the model is not overfitting and that the dataset size is sufficient for reliable generalization.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Residuals Analysis</h4>
+
+
+
+                        <p class="text-muted small mb-4">Distribution of prediction errors across predicted values.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/residuals_plot.png') }}" alt="Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Residuals scattered randomly around zero with no systematic pattern confirm the model has no significant bias across the full range of viability predictions.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="row justify-content-center">
+
+
+
+            <div class="col-md-8 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold text-center">Feature Importance</h4>
+
+
+
+                        <p class="text-muted small mb-4 text-center">Relative contribution of each cryoprotectant to the Random Forest predictions.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/feature_importance.png') }}" alt="Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO dominates (~77%) the model's predictions, consistent with its strong dose-dependent toxicity. Trehalose contributes ~23%, reflecting its complementary but non-linear role in cryopreservation outcomes.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+{# ============================================================ #}
+
+
+
+{# SECTION 3: NEURAL NETWORK PERFORMANCE                       #}
+
+
+
+{# ============================================================ #}
+
+
+
+
+
+
+
+{% if nn_available %}
+
+
+
+<div class="row justify-content-center mb-5">
+
+
+
+    <div class="col-lg-11">
+
+
+
+        <h2 class="section-title border-bottom pb-2 mb-4">3. Neural Network (PyTorch) Performance</h2>
+
+
+
+
+
+
+
+        <div class="row mb-4">
+
+
+
+            <div class="col-md-12">
+
+
+
+                <div class="card content-card">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <p>A deep neural network was trained using PyTorch with polynomial feature engineering (DMSO², Trehalose², DMSO×Trehalose) to capture non-linear toxicity thresholds. The architecture uses 3 hidden layers (128→64→32 neurons) with Batch Normalization, Dropout (20%), and early stopping on a dedicated validation set.</p>
+
+
+
+                        <div class="row text-center mt-4">
+
+
+
+                            {% if nn_metrics %}
+
+
+
+                            <div class="col-sm-3">
+
+
+
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('r2_test', 0) }}</h3>
+
+
+
+                                <span class="text-muted small">R² (Test Set)</span>
+
+
+
+                            </div>
+
+
+
+                            <div class="col-sm-3">
+
+
+
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.2f' % nn_metrics.get('rmse_test', 0) }}%</h3>
+
+
+
+                                <span class="text-muted small">RMSE (Test Set)</span>
+
+
+
+                            </div>
+
+
+
+                            <div class="col-sm-3">
+
+
+
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('cv_r2_mean', 0) }}</h3>
+
+
+
+                                <span class="text-muted small">R² (K-Fold CV Mean)</span>
+
+
+
+                            </div>
+
+
+
+                            <div class="col-sm-3">
+
+
+
+                                <h3 class="fw-bold" style="color: #d62728;">±{{ '%.3f' % nn_metrics.get('cv_r2_std', 0) }}</h3>
+
+
+
+                                <span class="text-muted small">R² CV Std. Dev.</span>
+
+
+
+                            </div>
+
+
+
+                            {% else %}
+
+
+
+                            <div class="col-12">
+
+
+
+                                <p class="text-muted">Run the neural network notebook to generate performance metrics.</p>
+
+
+
+                            </div>
+
+
+
+                            {% endif %}
+
+
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="row">
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Model Fit (Actual vs. Predicted)</h4>
+
+
+
+                        <p class="text-muted small mb-4">Scatter plot of observed versus predicted viability from the neural network.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_real_vs_previsto.png') }}" alt="NN Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Points clustered along the diagonal confirm the network's predictive accuracy. Red points represent the held-out test set (unseen during training); blue points are training data.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Training Loss Curve</h4>
+
+
+
+                        <p class="text-muted small mb-4">Evolution of training and validation loss across epochs.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_curva_loss.png') }}" alt="NN Loss Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Converging training and validation loss curves confirm that early stopping prevented overfitting. The green dashed line marks the best epoch, where the model weights were preserved.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="row">
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Residuals Analysis</h4>
+
+
+
+                        <p class="text-muted small mb-4">Residuals vs. predicted values and error distribution histogram.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_residuos.png') }}" alt="NN Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Residuals approximately centered near zero confirm unbiased predictions. The histogram shows the error distribution, allowing assessment of systematic over- or under-estimation.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Feature Importance (Gini &amp; Permutation)</h4>
+
+
+
+                        <p class="text-muted small mb-4">Relative contribution of raw features [DMSO, Trehalose] computed from training data only, using both Gini (MDI) importance and permutation importance.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_feature_importance.png') }}" alt="NN Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO accounts for ~77% of feature importance and Trehalose for ~23%, consistent with DMSO’s dominant dose-dependent toxicity. Both Gini (MDI) and permutation importance report similar rankings, confirming the result is not an artifact of feature cardinality bias.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="row justify-content-center">
+
+
+
+            <div class="col-md-10 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold text-center">Comparative: Random Forest vs. Neural Network</h4>
+
+
+
+                        <p class="text-muted small mb-4 text-center">Direct side-by-side comparison of prediction accuracy between both model architectures on the same test set.</p>
+
+
+
+                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/nn_comparativo_rf_vs_nn.png') }}" alt="RF vs NN Comparison" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Both models show strong predictive performance. The Random Forest achieves slightly higher accuracy, while the Neural Network (trained with polynomial features) demonstrates competitive results, providing a complementary validation approach. When both models agree on a prediction, confidence in the result is substantially strengthened.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+{# ============================================================ #}
+
+
+
+{# SECTION: EMPIRICAL FOUNDATION                                #}
+
+
+
+{# ============================================================ #}
+
+
+
+
+
+
+
+<div class="row justify-content-center">
+
+
+
+    <div class="col-lg-11">
+
+
+
+        <h2 class="section-title border-bottom pb-2 mb-4">{% if nn_available %}4{% else %}3{% endif %}. Empirical Foundation (HepG2 Cells)</h2>
+
+
+
+        
+
+
+
+        <div class="row">
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Figure 1: Effect of DMSO Alone</h4>
+
+
+
+                        <div class="bg-light p-3 text-center rounded mb-3 border" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/figura1.png') }}" class="img-fluid rounded" alt="DMSO Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[DMSO plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing DMSO concentrations. HepG2 cells were frozen with 0–100% DMSO, thawed after 7 days, and viability assessed via trypan blue exclusion and MTT assays. Data represent mean ± SD from 6–15 samples per concentration (n=1–3 independent experiments). Statistical analysis used two-way ANOVA with Sidak post-test. Asterisks denote p&lt;0.0001; "ns" indicates non-significant.</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-md-6 mb-4">
+
+
+
+                <div class="card content-card h-100">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold">Figure 2: Effect of Trehalose Alone</h4>
+
+
+
+                        <div class="bg-light p-3 text-center rounded mb-3 border" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/figura2.png') }}" class="img-fluid rounded" alt="Trehalose Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Trehalose plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with increasing trehalose concentrations. HepG2 cells were frozen with 20–100% trehalose, thawed after 7 days, and viability assessed using trypan blue exclusion and MTT. Data show mean ± SD from 4–5 samples per concentration (n=1–2 independent experiments).</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="row justify-content-center mt-2 mb-5">
+
+
+
+            <div class="col-md-10">
+
+
+
+                <div class="card content-card">
+
+
+
+                    <div class="card-body p-4">
+
+
+
+                        <h4 class="card-title card-heading fw-bold text-center">Figure 3: Combined Effect (DMSO + Trehalose)</h4>
+
+
+
+                        <div class="bg-light p-4 text-center rounded mb-3 border mx-auto" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+
+
+
+                            <img src="{{ url_for('static', filename='images/figura3.png') }}" class="img-fluid rounded" alt="Combined Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Combined plot not available]</span>'">
+
+
+
+                        </div>
+
+
+
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of hepatocytes frozen with combinations of dimethyl sulfoxide and trehalose. HepG2 cells were frozen with 5% or 10% DMSO (D) and 5–30% trehalose (T). After 7 days, cells were thawed and viability was measured by trypan blue exclusion and MTT assays. Values represent mean ± SD from 2–7 samples per concentration (n=1 independent experiment).</p>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+{% endblock %}
+
+
+
+
+
+
+

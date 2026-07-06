@@ -1,0 +1,47 @@
+model,hyperparameter,value,notes
+Random Forest,n_estimators,200,
+Random Forest,criterion,squared_error,sklearn default
+Random Forest,max_features,1.0,sklearn 1.4 default (was sqrt in older versions)
+Random Forest,random_state,42,
+Random Forest,n_jobs,-1,
+XGBoost,n_estimators,100,
+XGBoost,learning_rate,0.1,
+XGBoost,max_depth,6,default
+XGBoost,subsample,1.0,default
+XGBoost,colsample_bytree,1.0,default
+XGBoost,random_state,42,
+XGBoost,verbosity,0,
+MLP (sklearn),hidden_layer_sizes,"(64, 32)",2 hidden layers
+MLP (sklearn),activation,relu,default
+MLP (sklearn),solver,adam,default
+MLP (sklearn),alpha,0.0001,L2 regularization; default
+MLP (sklearn),max_iter,2000,
+MLP (sklearn),early_stopping,True,
+MLP (sklearn),n_iter_no_change,10,default
+MLP (sklearn),random_state,42,
+SVR,kernel,rbf,
+SVR,C,100,
+SVR,gamma,0.1,
+SVR,epsilon,0.1,default
+Linear Regression,fit_intercept,True,default; no other hyperparameters
+Polynomial Regression,degree,2,
+Polynomial Regression,include_bias,False,
+Polynomial Regression,interaction_only,False,default
+PyTorch NN (poly),architecture,"128 -> 64 -> 32 -> 1",fully connected
+PyTorch NN (poly),input_features,5,poly deg=2: DMSO, Trehalose, DMSO^2, DMSO*Trehalose, Trehalose^2
+PyTorch NN (poly),batch_normalization,True,BatchNorm1d after each hidden layer
+PyTorch NN (poly),activation,ReLU,
+PyTorch NN (poly),dropout,0.2,applied after each hidden layer
+PyTorch NN (poly),optimizer,Adam,
+PyTorch NN (poly),learning_rate,0.001,
+PyTorch NN (poly),weight_decay,1e-4,L2 regularization
+PyTorch NN (poly),lr_scheduler,ReduceLROnPlateau,
+PyTorch NN (poly),lr_scheduler_factor,0.5,
+PyTorch NN (poly),lr_scheduler_patience,30,
+PyTorch NN (poly),early_stopping_patience,100,
+PyTorch NN (poly),max_epochs,2000,
+PyTorch NN (poly),batch_size,32,
+PyTorch NN (poly),loss_function,MSELoss,
+PyTorch NN (poly),device,cpu,forced CPU for reproducibility
+PyTorch NN (poly),seed,42,random + numpy + torch + DataLoader generator
+PyTorch NN (poly),best_epoch,381,from deterministic training run

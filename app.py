@@ -1,126 +1,71 @@
 import os
+import sys
 import json
 from flask import Flask, render_template, request
-import joblib
 import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+import nn_inference
+import rf_inference
 
 app = Flask(__name__)
 
-# The trained models are loaded lazily so the web app can start even when the
-# optional neural-network assets are not available in the current environment.
+# Metric artifacts are loaded lazily and cached at module scope so the app
+# only pays the loading cost once, on first use. Both models now run on
+# NumPy-only exports (models/rf_trees.npz / models/nn_weights.npz) -- no
+# scikit-learn or PyTorch in the request path. nn_model.pth and
+# random_forest_model.pkl stay in models/ as reference/audit artifacts used
+# by the notebooks, but the app no longer reads them.
 
-rf_model = None
-nn_model = None
-nn_pipeline = None
-_nn_load_attempted = False
-_rf_metrics_cache = None
+_metrics_cache = None
+
+_NN_EXPORT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "nn_weights.npz")
+_METRICS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "metrics.json")
 
 
-def get_rf():
-    """Load and cache the trained Random Forest regressor.
+def get_metrics():
+    """Load and cache metrics.json, the single source of truth for every
+    number shown by the templates (Random Forest, neural network, baselines,
+    best combinations, example predictions).
 
-    Returns
-    -------
-    object
-        The fitted scikit-learn model used for viability predictions.
+    Raises
+    ------
+    FileNotFoundError
+        If metrics.json is missing.
+    json.JSONDecodeError
+        If metrics.json exists but is not valid JSON.
+
+    Both are handled by the app-wide error handlers below, which log the
+    failure and render a visible error page -- this file must never fall
+    back to hardcoded numbers.
     """
-    global rf_model
-    if rf_model is None:
-        rf_model = joblib.load("random_forest_model.pkl")
-    return rf_model
+    global _metrics_cache
+    if _metrics_cache is None:
+        with open(_METRICS_PATH, "r") as f:
+            _metrics_cache = json.load(f)
+    return _metrics_cache
 
 
-def get_rf_metrics():
-    """Return the Random Forest metrics used by the web templates.
+def nn_ready():
+    """The neural network is available whenever its exported NumPy weights exist.
 
-    The metrics are read from the JSON file produced by the analysis notebook when
-    available. If that artifact is missing, a small fallback dictionary preserves
-    a stable view of the last known results for local testing.
-
-    Returns
-    -------
-    dict
-        Test metrics, cross-validation summaries, and the best concentration
-        combinations reported in the analysis notebook.
+    Inference no longer depends on PyTorch; nn_inference.py loads and caches
+    nn_export.npz on its own.
     """
-    global _rf_metrics_cache
-    if _rf_metrics_cache is None:
-        metrics_path = os.path.join(os.path.dirname(__file__), "rf_metrics.json")
-        if os.path.exists(metrics_path):
-            with open(metrics_path, "r") as f:
-                _rf_metrics_cache = json.load(f)
-        else:
-            # Preserve a stable fallback view when the metrics file is absent.
-            _rf_metrics_cache = {
-                "r2_test": 0.9797,
-                "rmse_test": 5.0247,
-                "cv_r2_mean": 0.9602,
-                "best_combinations": {
-                    "global":    {"dmso": 3.0, "trehalose": 1.0, "viability": 95.19},
-                    "dmso_only": {"dmso": 2.0, "trehalose": 0.0, "viability": 95.19},
-                    "treh_only": {"dmso": 0.0, "trehalose": 16.0, "viability": 78.48},
-                },
-            }
-    return _rf_metrics_cache
+    return os.path.exists(_NN_EXPORT_PATH)
 
 
-def get_nn():
-    """Load the optional neural-network model and preprocessing pipeline.
+@app.errorhandler(FileNotFoundError)
+@app.errorhandler(json.JSONDecodeError)
+def handle_missing_artifact(e):
+    """Fail visibly when a required artifact is missing or malformed.
 
-    The app keeps working even when PyTorch or the serialized model files are not
-    available. In that case it returns ``(None, None)`` and the UI falls back to
-    the Random Forest model.
-
-    Returns
-    -------
-    tuple
-        A pair ``(model, pipeline)`` when the neural network is available, or
-        ``(None, None)`` otherwise.
+    Silently falling back to stale hardcoded numbers previously caused the
+    site to diverge from the published results, so any such failure is
+    logged and surfaced to the user instead of being swallowed.
     """
-    global nn_model, nn_pipeline, _nn_load_attempted
-
-    if _nn_load_attempted:
-        return nn_model, nn_pipeline
-
-    _nn_load_attempted = True
-
-    try:
-        import torch
-        from torch import nn as tnn
-
-        class HepatoCryoNN(tnn.Module):
-            def __init__(self, input_dim=5, dropout_rate=0.2):
-                super().__init__()
-                self.network = tnn.Sequential(
-                    tnn.Linear(input_dim, 128), tnn.BatchNorm1d(128), tnn.ReLU(), tnn.Dropout(dropout_rate),
-                    tnn.Linear(128, 64),  tnn.BatchNorm1d(64),  tnn.ReLU(), tnn.Dropout(dropout_rate),
-                    tnn.Linear(64, 32),   tnn.BatchNorm1d(32),  tnn.ReLU(), tnn.Dropout(dropout_rate),
-                    tnn.Linear(32, 1)
-                )
-
-            def forward(self, x):
-                return self.network(x)
-
-        model_path = os.path.join(os.path.dirname(__file__), "nn_model.pth")
-        pipe_path = os.path.join(os.path.dirname(__file__), "nn_pipeline.pkl")
-
-        if os.path.exists(model_path) and os.path.exists(pipe_path):
-            nn_pipeline = joblib.load(pipe_path)
-            nn_model = HepatoCryoNN(input_dim=nn_pipeline["input_dim"])
-            nn_model.load_state_dict(
-                torch.load(model_path, map_location="cpu", weights_only=True)
-            )
-            nn_model.eval()
-            print("[OK] Neural Network loaded.")
-        else:
-            print("[INFO] NN model files not found. RF only.")
-
-    except ImportError:
-        print("[INFO] PyTorch not installed. RF only.")
-    except Exception as e:
-        print(f"[WARN] NN load failed: {e}. RF only.")
-
-    return nn_model, nn_pipeline
+    app.logger.error(f"Required artifact missing or invalid: {e}")
+    return render_template("error.html", error=str(e)), 500
 
 
 # The routes below keep the presentation layer thin and centralize the model
@@ -128,14 +73,13 @@ def get_nn():
 
 @app.route("/")
 def home():
-    model, _ = get_nn()
-    return render_template("index.html", nn_available=model is not None)
+    return render_template("index.html", nn_available=nn_ready())
 
 
 @app.route("/application", methods=["GET", "POST"])
 def application():
-    nn_mod, nn_pipe = get_nn()
-    nn_avail = nn_mod is not None
+    nn_avail = nn_ready()
+    metrics = get_metrics()
 
     rf_result = None
     nn_result = None
@@ -160,53 +104,39 @@ def application():
             else:
                 X = np.array([[dmso_value, trehalose_value]])
 
-                # The Random Forest expects the same two-feature input used in the
-                # analysis notebook.
+                # NumPy-only inference for both models: no scikit-learn, no PyTorch.
                 if selected_model in ("rf", "both"):
-                    rf_result = round(float(get_rf().predict(X)[0]), 2)
+                    rf_result = round(float(rf_inference.predict(X)[0]), 2)
 
-                # The neural-network pathway uses the same preprocessing pipeline
-                # that was fitted during training, including polynomial expansion
-                # and standardization.
+                # NumPy-only inference: no PyTorch involved in production.
                 if selected_model in ("nn", "both") and nn_avail:
-                    import torch
-                    entrada_poly = nn_pipe["poly"].transform(X)
-                    entrada_scaled = nn_pipe["scaler"].transform(entrada_poly)
-                    entrada_tensor = torch.FloatTensor(entrada_scaled)
-                    with torch.no_grad():
-                        nn_result = round(nn_mod(entrada_tensor).item(), 2)
+                    nn_result = round(nn_inference.predict(dmso_value, trehalose_value), 2)
 
         except (ValueError, TypeError):
             error_msg = "Invalid input. Please enter valid numbers."
-        except Exception as e:
-            error_msg = f"Prediction error: {str(e)}"
-
-    nn_metrics = nn_pipe.get("metrics", {}) if nn_pipe else {}
 
     return render_template(
         "simulator.html",
         rf_result=rf_result,
         nn_result=nn_result,
         nn_available=nn_avail,
-        nn_metrics=nn_metrics,
-        rf_metrics=get_rf_metrics(),
+        nn_metrics=metrics["neural_network"],
+        rf_metrics=metrics["random_forest"],
         dmso=dmso_value,
         trehalose=trehalose_value,
         error=error_msg,
         selected_model=selected_model,
     )
-    
 
 
 @app.route("/lab-data")
 def lab_data():
-    nn_mod, nn_pipe = get_nn()
-    nn_metrics = nn_pipe.get("metrics", {}) if nn_pipe else {}
+    metrics = get_metrics()
     return render_template(
         "lab_data.html",
-        nn_available=nn_mod is not None,
-        nn_metrics=nn_metrics,
-        rf_metrics=get_rf_metrics(),
+        nn_available=nn_ready(),
+        nn_metrics=metrics["neural_network"],
+        rf_metrics=metrics["random_forest"],
     )
 
 

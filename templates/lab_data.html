@@ -98,7 +98,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/nn_correlacao.png') }}" alt="Correlation Matrix" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Correlation matrix not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/eda_correlation_matrix.png') }}" alt="Correlation Matrix" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Correlation matrix not available]</span>'">
 
 
 
@@ -106,7 +106,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows moderate negative correlation with viability (r = −0.574), consistent with dose-dependent toxicity. Trehalose shows near-zero linear correlation (r = 0.003), reflecting a non-linear relationship captured by polynomial feature engineering. SFB's apparent positive correlation (r = 0.655) is confounded rather than causal: SFB acts as a balance/diluent variable (DMSO + Trehalose + SFB = 100% in 208/216 rows; 8 rows = 10%), and including it adds negligible predictive value to the RF model while inflating SFB's apparent feature importance at DMSO's expense. SFB is therefore excluded from the feature set.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows moderate negative correlation with viability (r = −0.574), consistent with dose-dependent toxicity. Trehalose shows near-zero linear correlation (r = 0.003), reflecting a non-linear relationship that both models capture directly from the raw concentration values, without any hand-engineered polynomial features. SFB's apparent positive correlation (r = 0.655) is confounded rather than causal: SFB acts as a balance/diluent variable (DMSO + Trehalose + SFB = 100% in 208/216 rows; 8 rows = 10%), and including it adds negligible predictive value to the RF model while inflating SFB's apparent feature importance at DMSO's expense. SFB is therefore excluded from the feature set.</p>
 
 
 
@@ -142,7 +142,7 @@
 
 
 
-                        <p class="text-muted small mb-4">Scatter plots of each cryoprotectant versus viability and histogram of viability distribution.</p>
+                        <p class="text-muted small mb-4">Histogram of post-thaw viability across all 216 experimental observations.</p>
 
 
 
@@ -150,7 +150,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/nn_distribuicao.png') }}" alt="Data Distribution" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Distribution plots not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/eda_viability_histogram.png') }}" alt="Viability Distribution" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Distribution plot not available]</span>'">
 
 
 
@@ -158,7 +158,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows a clear toxicity threshold — viability drops sharply above ~25%. Trehalose displays a non-linear pattern: moderate concentrations are beneficial but excessive amounts are detrimental. The viability distribution is bimodal, with peaks near 0% and near 90–100%, reflecting the binary nature of cryopreservation outcomes.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> The viability distribution is bimodal, with peaks near 0% and near 90–100%, reflecting the binary nature of cryopreservation outcomes: cells largely either survive the process well or do not survive it at all, with comparatively few intermediate results.</p>
 
 
 
@@ -250,7 +250,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/real_vs_pred.png') }}" alt="Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/rf_actual_vs_predicted.png') }}" alt="Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -258,7 +258,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Points clustered along the diagonal confirm the model's high R² = 0.980 and low error (RMSE = 5.02%), demonstrating accurate generalization to unseen data.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Points clustered along the diagonal confirm the model's high R² = {{ '%.3f' % rf_metrics.get('r2_test') }} and low error (RMSE = {{ '%.2f' % rf_metrics.get('rmse_test') }}%), demonstrating accurate generalization to unseen data.</p>
 
 
 
@@ -302,7 +302,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/heatmap_viability.png') }}" alt="Viability Heatmap" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Heatmap not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/rf_viability_heatmap.png') }}" alt="Viability Heatmap" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Heatmap not available]</span>'">
 
 
 
@@ -362,7 +362,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/learning_curve.png') }}" alt="Learning Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/rf_learning_curve.png') }}" alt="Learning Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -414,7 +414,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/residuals_plot.png') }}" alt="Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/rf_residuals.png') }}" alt="Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -474,7 +474,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/feature_importance.png') }}" alt="Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/rf_feature_importance.png') }}" alt="Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -566,7 +566,7 @@
 
 
 
-                        <p>A deep neural network was trained using PyTorch with polynomial feature engineering (DMSO², Trehalose², DMSO×Trehalose) to capture non-linear toxicity thresholds. The architecture uses 3 hidden layers (128→64→32 neurons) with Batch Normalization, Dropout (20%), and early stopping on a dedicated validation set.</p>
+                        <p>A deep neural network was trained using PyTorch on the two raw cryoprotectant concentrations (% DMSO, trehalose) directly — no polynomial feature engineering. The non-linear toxicity relationship is captured by the network itself rather than by hand-built features. The architecture uses 3 hidden layers (128→64→32 neurons) with ReLU activations, regularized with weight decay (L2, 1e-4) and early stopping on a dedicated validation set — no Batch Normalization or Dropout are used. Training happens in PyTorch; in production, predictions are served by a NumPy-only reimplementation of the trained network, so the deployed application does not depend on PyTorch.</p>
 
 
 
@@ -582,7 +582,7 @@
 
 
 
-                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('r2_test', 0) }}</h3>
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('r2_test') }}</h3>
 
 
 
@@ -598,7 +598,7 @@
 
 
 
-                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.2f' % nn_metrics.get('rmse_test', 0) }}%</h3>
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.2f' % nn_metrics.get('rmse_test') }}%</h3>
 
 
 
@@ -614,7 +614,7 @@
 
 
 
-                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('cv_r2_mean', 0) }}</h3>
+                                <h3 class="fw-bold" style="color: #d62728;">{{ '%.3f' % nn_metrics.get('cv_r2_mean') }}</h3>
 
 
 
@@ -630,7 +630,7 @@
 
 
 
-                                <h3 class="fw-bold" style="color: #d62728;">±{{ '%.3f' % nn_metrics.get('cv_r2_std', 0) }}</h3>
+                                <h3 class="fw-bold" style="color: #d62728;">±{{ '%.3f' % nn_metrics.get('cv_r2_std') }}</h3>
 
 
 
@@ -714,7 +714,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/nn_real_vs_previsto.png') }}" alt="NN Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/nn_actual_vs_predicted.png') }}" alt="NN Actual vs Predicted" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -766,7 +766,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/nn_curva_loss.png') }}" alt="NN Loss Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/nn_loss_curve.png') }}" alt="NN Loss Curve" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -826,7 +826,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/nn_residuos.png') }}" alt="NN Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/nn_residuals.png') }}" alt="NN Residuals" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -852,53 +852,6 @@
 
 
 
-
-
-            <div class="col-md-6 mb-4">
-
-
-
-                <div class="card content-card h-100">
-
-
-
-                    <div class="card-body p-4">
-
-
-
-                        <h4 class="card-title card-heading fw-bold">Feature Importance (Gini &amp; Permutation)</h4>
-
-
-
-                        <p class="text-muted small mb-4">Relative contribution of raw features [DMSO, Trehalose] computed from training data only, using both Gini (MDI) importance and permutation importance.</p>
-
-
-
-                        <div class="bg-light p-3 text-center rounded border mb-3" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
-
-
-
-                            <img src="{{ url_for('static', filename='images/nn_feature_importance.png') }}" alt="NN Feature Importance" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
-
-
-
-                        </div>
-
-
-
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO accounts for ~77% of feature importance and Trehalose for ~23%, consistent with DMSO’s dominant dose-dependent toxicity. Both Gini (MDI) and permutation importance report similar rankings, confirming the result is not an artifact of feature cardinality bias.</p>
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-
-            </div>
 
 
 
@@ -938,7 +891,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/nn_comparativo_rf_vs_nn.png') }}" alt="RF vs NN Comparison" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/rf_vs_nn_comparison.png') }}" alt="RF vs NN Comparison" class="img-fluid rounded" onerror="this.outerHTML='<span class=\'text-muted\'>[Plot not available]</span>'">
 
 
 
@@ -946,7 +899,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Both models show strong predictive performance. The Random Forest achieves slightly higher accuracy, while the Neural Network (trained with polynomial features) demonstrates competitive results, providing a complementary validation approach. When both models agree on a prediction, confidence in the result is substantially strengthened.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Both models show strong predictive performance. The Random Forest achieves slightly higher accuracy, while the Neural Network — trained on the same two raw concentrations, without polynomial feature engineering — demonstrates competitive results, providing a complementary validation approach. When both models agree on a prediction, confidence in the result is substantially strengthened.</p>
 
 
 
@@ -1038,7 +991,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/figura1.png') }}" class="img-fluid rounded" alt="DMSO Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[DMSO plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/wetlab_dmso_viability.png') }}" class="img-fluid rounded" alt="DMSO Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[DMSO plot not available]</span>'">
 
 
 
@@ -1086,7 +1039,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/figura2.png') }}" class="img-fluid rounded" alt="Trehalose Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Trehalose plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/wetlab_trehalose_viability.png') }}" class="img-fluid rounded" alt="Trehalose Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Trehalose plot not available]</span>'">
 
 
 
@@ -1142,7 +1095,7 @@
 
 
 
-                            <img src="{{ url_for('static', filename='images/figura3.png') }}" class="img-fluid rounded" alt="Combined Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Combined plot not available]</span>'">
+                            <img src="{{ url_for('static', filename='images/wetlab_dmso_trehalose_combined.png') }}" class="img-fluid rounded" alt="Combined Plot" onerror="this.outerHTML='<span class=\'text-muted\'>[Combined plot not available]</span>'">
 
 
 

@@ -1,117 +1,123 @@
 # HepatoCryoAI
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-Web%20Framework-lightgrey)](https://flask.palletsprojects.com/)
-[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange)](https://scikit-learn.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-Neural%20Network-ee4c2c)](https://pytorch.org/)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple)](https://getbootstrap.com/)
+A web application that predicts post-thaw viability of cryopreserved HepG2
+hepatocytes from the concentrations of two cryoprotectants, DMSO and
+trehalose.
 
-**HepatoCryoAI** is a predictive web application and machine-learning tool designed to support the optimization of cryopreservation protocols for human hepatocytes. Developed as a research-oriented calculator, it estimates post-thaw viability from experimentally meaningful concentrations of cryoprotectants.
+## Scientific context
 
----
+Cryopreservation of human hepatocytes is a bottleneck for cell-based
+alternatives to liver transplantation: cells routinely lose viability and
+function after thawing, and the choice of cryoprotectant concentrations has
+a large, non-linear effect on the outcome. This project is built on 216
+experimental observations of HepG2 cell viability across a grid of DMSO and
+trehalose concentrations. From that data, it trains two independent
+regression models -- a Random Forest and a small neural network -- and
+serves both through a web interface so that a given combination of
+concentrations can be evaluated before running a wet-lab experiment.
 
-## Scientific background
+## Models and performance
 
-Chronic liver diseases (CLD) are a major public-health issue, and cirrhosis is a leading cause of hospitalization and mortality. Although liver transplantation is the only definitive therapy, the severe shortage of organs has driven interest in cell-based alternatives using human hepatocytes.
+Both models take only the two raw concentrations, `% DMSO` and `TREHALOSE`,
+as input. No polynomial or other hand-engineered features are used.
 
-The primary limitation of this approach is loss of viability and functionality after thawing. **HepatoCryoAI** addresses this bottleneck with two machine learning models trained on *in vitro* HepG2 data, predicting survival rates when using dimethyl sulfoxide (DMSO) and trehalose as cryoprotectants.
+| Model | R² (test) | RMSE (test) | R² (5-fold CV) |
+|---|---|---|---|
+| Random Forest | 0.9797 | 5.02 | 0.9602 |
+| Neural Network (ANN) | 0.9788 | 5.14 | 0.9680 |
+| XGBoost | 0.9773 | 5.32 | 0.9605 |
+| Polynomial Regression (deg 2) | 0.6096 | 22.04 | 0.3787 |
+| SVR | 0.5441 | 23.82 | 0.2878 |
+| Linear Regression | 0.4775 | 25.50 | 0.3399 |
 
----
+XGBoost, Polynomial Regression, SVR and Linear Regression are included as
+baselines / alternative-algorithm comparisons, not as deployed models. All
+numbers above are read directly from `metrics.json`.
 
-## Key features
+## Methodology
 
-1. **Dual-model prediction** — Random Forest Regressor (R² ≈ 0.98) and Deep Neural Network (PyTorch, R² ≈ 0.97) for cross-validated viability estimation.
-2. **Interactive web simulator** — User-friendly interface for researchers to enter cryoprotectant parameters and receive instant predictions from both models.
-3. **Input validation** — Server-side checks ensuring concentrations are non-negative and do not exceed 100%.
-4. **Data visualization** — Heatmaps and scatter plots comparing computational output with laboratory results.
-5. **Laboratory data section** — Displays foundational experiments (Trypan-blue and MTT assays).
+The 216 samples are split 80/20 with a fixed seed into 172 train+validation
+samples and 44 test samples, held out and evaluated exactly once. For the
+neural network, the 172 train+validation samples are further split into 129
+for fitting and 43 for validation (early stopping and learning-rate
+scheduling). Five-fold cross-validation is run over the 172 train+validation
+samples for both models. The neural network's regularization configuration
+(batch normalization, dropout, weight decay, patience) was selected by a
+small grid search scored on validation loss only -- the test set is never
+used for model selection.
 
----
+## Running the application
 
-## Technology stack
+```bash
+pip install -r requirements.txt
+python app.py
+```
 
-* **Backend & modeling:** Python, pandas, NumPy, scikit-learn, PyTorch
-* **Web framework:** Flask
-* **Frontend:** HTML5, CSS3, Bootstrap 5
-* **Model persistence:** Joblib (Random Forest pipeline), PyTorch state_dict (Neural Network)
+Then open `http://127.0.0.1:5000`. The runtime environment needs only
+`flask` and `numpy` (about 67 MB installed): inference for both models runs
+on NumPy alone, from weights exported ahead of time (`models/nn_weights.npz`,
+`models/rf_trees.npz`) -- no scikit-learn and no PyTorch are required to
+serve predictions.
 
----
+## Reproducing the analysis
+
+The full analysis -- training, cross-validation, and figure generation --
+requires the development dependencies:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Then run the notebooks in `notebooks/` in numeric order:
+
+1. `01_random_forest.ipynb` -- trains and validates the Random Forest.
+2. `02_neural_network.ipynb` -- hyperparameter search, final training,
+   cross-validation, and the NumPy export of the neural network.
+3. `03_model_comparison.ipynb` -- compares Random Forest, XGBoost, the
+   neural network, and SVR under an identical protocol.
+4. `04_baselines.ipynb` -- Linear Regression and Polynomial Regression
+   baselines.
 
 ## Project structure
 
 ```
 hepato_cryo_ai/
-├── app.py                      # Flask application
-├── random_forest_model.pkl     # Trained Random Forest model
-├── nn_model.pth                # Trained Neural Network weights (generated by notebook)
-├── nn_pipeline.pkl             # NN preprocessing pipeline (generated by notebook)
-├── requirements.txt
+├── README.md                 # this file
+├── requirements.txt          # runtime dependencies (flask, numpy)
+├── requirements-dev.txt      # + dependencies to reproduce the analysis
+├── app.py                    # Flask application
+├── metrics.json              # single source of truth for all reported numbers
+├── src/
+│   ├── nn_inference.py       # NumPy-only neural network inference
+│   └── rf_inference.py       # NumPy-only Random Forest inference
+├── models/
+│   ├── nn_weights.npz        # exported neural network weights (used by the app)
+│   ├── rf_trees.npz          # exported Random Forest trees (used by the app)
+│   ├── nn_model.pth          # PyTorch weights (reference/audit only)
+│   └── random_forest_model.pkl  # scikit-learn model (reference/audit only)
 ├── data/
-│   └── raw/
-│       └── hepg2.csv           # Experimental dataset (216 samples)
-├── notebooks/
-│   ├── random_forest.ipynb     # Random Forest training & evaluation
-│   ├── alternatives.ipynb      # Model comparison (RF, MLP, SVR, XGBoost)
-│   ├── neural_network.ipynb    # PyTorch Neural Network (run this to generate nn_model.pth)
-│   └── validation_images/      # Generated plots
-├── static/images/              # Images served by the web app
-└── templates/                  # HTML templates (Jinja2)
+│   ├── raw/hepg2.csv         # the 216 experimental observations
+│   ├── comparison_table.csv  # model comparison table
+│   └── hyperparameters.csv   # hyperparameters for every model
+├── notebooks/                # analysis notebooks, numbered by execution order
+├── static/images/            # all figures (single location)
+├── templates/                # Flask/Jinja2 HTML templates
+└── tests/                    # regression tests
 ```
 
----
+## Reproducibility notes
 
-## Running locally
+All random seeds are fixed (Python, NumPy, PyTorch, and scikit-learn where
+applicable), and training runs on CPU rather than GPU for bit-for-bit
+reproducibility. `metrics.json` is the single source of truth: every number
+shown by the web application and reported in the paper is read from it
+directly, with no hardcoded fallback values in the application code or
+templates.
 
-```bash
-# Clone the repository
-git clone https://github.com/alenarth/hepato_cryo_ai.git
-cd hepato_cryo_ai
+## Citation
 
-# Create and activate a virtual environment
-python -m venv venv
-# Windows
-source venv/scripts/activate
-# Linux/macOS
-source venv/bin/activate
+*Citation to the associated paper will be added here upon publication.*
 
-# Install dependencies
-pip install -r requirements.txt
+## License
 
-# (Optional) Train the Neural Network — generates nn_model.pth and nn_pipeline.pkl
-# Open notebooks/neural_network.ipynb in Jupyter and run all cells.
-# Then copy the generated plots to static/images/:
-# cp notebooks/validation_images/nn_*.png static/images/
-
-# Start the Flask app
-python app.py
-```
-
-Open a browser and visit http://127.0.0.1:5000 to access the simulator.
-
-> **Note:** The neural-network component is optional. If `nn_model.pth` and `nn_pipeline.pkl` are not present, or PyTorch is not installed, the app still runs using the Random Forest model as a fallback.
-
----
-
-## Deploying to production
-
-When deploying, make sure **not** to use `debug=True`. The app reads the `FLASK_DEBUG` environment variable:
-
-```bash
-# Production (default)
-python app.py
-
-# Development only
-FLASK_DEBUG=true python app.py
-```
-
----
-
-## Disclaimer & liability
-
-HepatoCryoAI is provided solely as a complementary research tool. Simulation results **must not** replace rigorous *in vitro* and *in vivo* laboratory validation. Users accept full responsibility for decisions made based on this software.
-
----
-
-## Acknowledgments
-
-This project contributes to a wider initiative for creating hepatocyte banks and expanding cell therapy as an alternative to liver transplantation, developed at the Cellular Communication Laboratory, Oswaldo Cruz Institute — Fiocruz.
+*No license has been declared for this repository yet.*

@@ -11,14 +11,6 @@ XGBoost,subsample,1.0,default
 XGBoost,colsample_bytree,1.0,default
 XGBoost,random_state,42,
 XGBoost,verbosity,0,
-MLP (sklearn),hidden_layer_sizes,"(64, 32)",2 hidden layers
-MLP (sklearn),activation,relu,default
-MLP (sklearn),solver,adam,default
-MLP (sklearn),alpha,0.0001,L2 regularization; default
-MLP (sklearn),max_iter,2000,
-MLP (sklearn),early_stopping,True,
-MLP (sklearn),n_iter_no_change,10,default
-MLP (sklearn),random_state,42,
 SVR,kernel,rbf,
 SVR,C,100,
 SVR,gamma,0.1,
@@ -27,21 +19,21 @@ Linear Regression,fit_intercept,True,default; no other hyperparameters
 Polynomial Regression,degree,2,
 Polynomial Regression,include_bias,False,
 Polynomial Regression,interaction_only,False,default
-PyTorch NN (poly),architecture,"128 -> 64 -> 32 -> 1",fully connected
-PyTorch NN (poly),input_features,5,poly deg=2: DMSO, Trehalose, DMSO^2, DMSO*Trehalose, Trehalose^2
-PyTorch NN (poly),batch_normalization,True,BatchNorm1d after each hidden layer
-PyTorch NN (poly),activation,ReLU,
-PyTorch NN (poly),dropout,0.2,applied after each hidden layer
-PyTorch NN (poly),optimizer,Adam,
-PyTorch NN (poly),learning_rate,0.001,
-PyTorch NN (poly),weight_decay,1e-4,L2 regularization
-PyTorch NN (poly),lr_scheduler,ReduceLROnPlateau,
-PyTorch NN (poly),lr_scheduler_factor,0.5,
-PyTorch NN (poly),lr_scheduler_patience,30,
-PyTorch NN (poly),early_stopping_patience,100,
-PyTorch NN (poly),max_epochs,2000,
-PyTorch NN (poly),batch_size,32,
-PyTorch NN (poly),loss_function,MSELoss,
-PyTorch NN (poly),device,cpu,forced CPU for reproducibility
-PyTorch NN (poly),seed,42,random + numpy + torch + DataLoader generator
-PyTorch NN (poly),best_epoch,381,from deterministic training run
+Neural Network (ANN),architecture,"128 -> 64 -> 32 -> 1",fully connected
+Neural Network (ANN),input_features,2,raw: % DMSO, TREHALOSE (no polynomial expansion)
+Neural Network (ANN),batch_normalization,False,not used in the winning configuration
+Neural Network (ANN),activation,ReLU,
+Neural Network (ANN),dropout,0.0,not used in the winning configuration
+Neural Network (ANN),optimizer,Adam,
+Neural Network (ANN),learning_rate,0.001,
+Neural Network (ANN),weight_decay,1e-4,L2 regularization
+Neural Network (ANN),lr_scheduler,ReduceLROnPlateau,
+Neural Network (ANN),lr_scheduler_factor,0.5,
+Neural Network (ANN),lr_scheduler_patience,30,
+Neural Network (ANN),early_stopping_patience,100,selected by a validation-loss hyperparameter search
+Neural Network (ANN),max_epochs,2000,
+Neural Network (ANN),batch_size,32,
+Neural Network (ANN),loss_function,MSELoss,
+Neural Network (ANN),device,cpu,forced CPU for reproducibility
+Neural Network (ANN),seed,42,random + numpy + torch + DataLoader generator
+Neural Network (ANN),best_epoch,441,from deterministic training run

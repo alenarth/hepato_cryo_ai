@@ -1,8 +1,7 @@
 ,R2_test,RMSE_test,R2_CV
 Random Forest,0.9797,5.0245,0.9602
+Neural Network (ANN),0.9788,5.137,0.968
 XGBoost,0.9773,5.3198,0.9605
-PyTorch NN (poly),0.9278,9.4768,
-MLP sklearn (raw),0.6122,21.9697,0.5849
 Polynomial Regression (deg=2),0.6096,22.043,0.3787
 SVR (raw),0.5441,23.8188,0.2878
 Linear Regression (raw),0.4775,25.5001,0.3399

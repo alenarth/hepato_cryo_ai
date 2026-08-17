@@ -106,15 +106,15 @@
                 <div class="row text-center mt-4">
                     <div class="{% if nn_available %}col-sm-6{% else %}col-sm-12{% endif %} mb-3">
                         <span class="badge bg-success mb-2">Random Forest</span>
-                        <h2 class="fw-bold text-dark">{{ '%.3f' % rf_metrics.get('r2_test', 0.9797) }}</h2>
-                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % rf_metrics.get('rmse_test', 5.02) }}%)</span>
+                        <h2 class="fw-bold text-dark">{{ '%.3f' % rf_metrics.get('r2_test') }}</h2>
+                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % rf_metrics.get('rmse_test') }}%)</span>
                     </div>
                     {% if nn_available %}
                     <div class="col-sm-6 mb-3">
                         <span class="badge mb-2" style="background-color: #d62728;">Neural Network</span>
                         {% if nn_metrics %}
-                        <h2 class="fw-bold text-dark">{{ '%.3f' % nn_metrics.get('r2_test', 0) }}</h2>
-                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % nn_metrics.get('rmse_test', 0) }}%)</span>
+                        <h2 class="fw-bold text-dark">{{ '%.3f' % nn_metrics.get('r2_test') }}</h2>
+                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % nn_metrics.get('rmse_test') }}%)</span>
                         {% else %}
                         <h2 class="fw-bold text-dark">—</h2>
                         <span class="text-muted small">Metrics unavailable</span>
@@ -140,28 +140,29 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% set bc = rf_metrics.get('best_combinations', {}) %}
+                        {% set bc = rf_metrics.get('best_combinations') %}
+                        {% set tied = bc.get('global_tied') %}
                         <tr>
                             <td><strong>Optimal Global Combined</strong></td>
-                            <td>{{ bc.get('global', {}).get('dmso', 3.0) }}</td>
-                            <td>{{ bc.get('global', {}).get('trehalose', 1.0) }}</td>
-                            <td class="text-success fw-bold">{{ bc.get('global', {}).get('viability', 95.19) }}%</td>
+                            <td>{{ tied.get('dmso_range')[0]|int }}–{{ tied.get('dmso_range')[1]|int }}</td>
+                            <td>{{ tied.get('trehalose_range')[0]|int }}–{{ tied.get('trehalose_range')[1]|int }}</td>
+                            <td class="text-success fw-bold">{{ tied.get('viability') }}%</td>
                         </tr>
                         <tr>
                             <td><strong>Optimal DMSO Alone</strong></td>
-                            <td>{{ bc.get('dmso_only', {}).get('dmso', 2.0) }}</td>
+                            <td>{{ bc.get('dmso_only').get('dmso') }}</td>
                             <td>0.0</td>
-                            <td class="text-success fw-bold">{{ bc.get('dmso_only', {}).get('viability', 95.19) }}%</td>
+                            <td class="text-success fw-bold">{{ bc.get('dmso_only').get('viability') }}%</td>
                         </tr>
                         <tr>
                             <td><strong>Optimal Trehalose Alone</strong></td>
                             <td>0.0</td>
-                            <td>{{ bc.get('treh_only', {}).get('trehalose', 16.0) }}</td>
-                            <td class="text-warning fw-bold">{{ bc.get('treh_only', {}).get('viability', 78.48) }}%</td>
+                            <td>{{ bc.get('treh_only').get('trehalose') }}</td>
+                            <td class="text-warning fw-bold">{{ bc.get('treh_only').get('viability') }}%</td>
                         </tr>
                     </tbody>
                 </table>
-                <p class="text-muted small mb-0">Values derived from a systematic search across all concentration combinations within the experimental range of the training data.</p>
+                <p class="text-muted small mb-0">The Random Forest predicts by constant regions, so the global optimum is a plateau of {{ tied.get('combinations')|length }} tied grid combinations (step 1%), reported above as a range, not a single arbitrarily-chosen point. Values derived from a systematic search across all concentration combinations within the experimental range of the training data.</p>
             </div>
         </div>
     </div>

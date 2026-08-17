@@ -1,0 +1,146 @@
+{
+  "generated_at": "2026-08-16T12:00:06",
+  "dataset": {
+    "n_total": 216,
+    "n_trainval": 172,
+    "n_train_fit": 129,
+    "n_val": 43,
+    "n_test": 44,
+    "split_seed": 42,
+    "note": "Split identical across random_forest.ipynb, neural_network.ipynb, alternatives.ipynb and baselines_and_ablation.ipynb (train_test_split, test_size=0.2, random_state=42; NN further splits the 172 trainval samples 60/20 into 129 fit / 43 validation, test_size=0.25, random_state=42)."
+  },
+  "random_forest": {
+    "features": [
+      "% DMSO",
+      "TREHALOSE"
+    ],
+    "r2_test": 0.9797,
+    "rmse_test": 5.0245,
+    "cv_r2_mean": 0.9602,
+    "cv_r2_std": 0.0196,
+    "cv_rmse_mean": 6.9381,
+    "cv_rmse_std": 1.2493,
+    "feature_importance": {
+      "% DMSO": 0.7768,
+      "TREHALOSE": 0.2232
+    },
+    "best_combinations": {
+      "global": {
+        "dmso": 2.0,
+        "trehalose": 1.0,
+        "viability": 95.19
+      },
+      "dmso_only": {
+        "dmso": 2.0,
+        "trehalose": 0.0,
+        "viability": 95.19
+      },
+      "treh_only": {
+        "dmso": 0.0,
+        "trehalose": 23.0,
+        "viability": 78.48
+      },
+      "global_tied": {
+        "note": "The Random Forest predicts by constant regions, so the global optimum is a plateau, not a single point. These 6 grid combinations (step 1%, sum<=100%) are tied at the exact same predicted value. Report as a range, not a single arbitrarily-chosen point.",
+        "dmso_range": [2.0, 3.0],
+        "trehalose_range": [0.0, 2.0],
+        "viability": 95.19,
+        "combinations": [
+          {"dmso": 2.0, "trehalose": 0.0},
+          {"dmso": 2.0, "trehalose": 1.0},
+          {"dmso": 2.0, "trehalose": 2.0},
+          {"dmso": 3.0, "trehalose": 0.0},
+          {"dmso": 3.0, "trehalose": 1.0},
+          {"dmso": 3.0, "trehalose": 2.0}
+        ]
+      }
+    },
+    "hyperparameters": {
+      "n_estimators": 200,
+      "random_state": 42
+    }
+  },
+  "neural_network": {
+    "features": [
+      "% DMSO",
+      "TREHALOSE"
+    ],
+    "architecture": "2 -> 128 -> 64 -> 32 -> 1 (ReLU)",
+    "winning_config": {
+      "use_bn": false,
+      "dropout": 0.0,
+      "weight_decay": 0.0001,
+      "patience": 100
+    },
+    "search_winner_mean_val_loss": 45.7711,
+    "r2_fit": 0.9795,
+    "rmse_fit": 5.4652,
+    "r2_val": 0.9576,
+    "rmse_val": 6.5839,
+    "r2_test": 0.9788,
+    "rmse_test": 5.137,
+    "best_epoch": 441,
+    "residuals_test_mean": 0.3362,
+    "residuals_test_std": 5.126,
+    "cv_r2_mean": 0.968,
+    "cv_r2_std": 0.0124,
+    "cv_rmse_mean": 6.3072,
+    "cv_rmse_std": 0.9676,
+    "cv_per_fold_r2": [
+      0.9486,
+      0.9611,
+      0.9856,
+      0.9718,
+      0.9728
+    ],
+    "cv_per_fold_rmse": [
+      7.1297,
+      7.527,
+      4.7609,
+      6.0928,
+      6.0257
+    ],
+    "seed_stability_check": {
+      "seeds": [
+        0,
+        1,
+        2,
+        42,
+        123
+      ],
+      "r2_per_seed": [
+        0.9774,
+        0.9779,
+        0.9734,
+        0.9788,
+        0.9778
+      ],
+      "r2_mean": 0.9771,
+      "r2_std": 0.0019,
+      "sensitive_to_seed": false,
+      "note": "Control check only, not a headline result."
+    },
+    "numpy_export_validation": {
+      "grid_size": 5151,
+      "max_abs_diff": 7.220775961869208e-05,
+      "passed": true
+    }
+  },
+  "baselines": {
+    "linear_regression": {
+      "r2_test": 0.4775,
+      "rmse_test": 25.5001,
+      "r2_cv": 0.3399
+    },
+    "polynomial_regression_deg2": {
+      "r2_test": 0.6096,
+      "rmse_test": 22.043,
+      "r2_cv": 0.3787
+    }
+  },
+  "example_prediction_5dmso_10trehalose": {
+    "random_forest": 65.7638,
+    "neural_network_pytorch": 69.2297,
+    "neural_network_numpy": 69.2297
+  }
+}

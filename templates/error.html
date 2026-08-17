@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card content-card border-danger">
+            <div class="card-body p-5 text-center">
+                <h1 class="page-title text-danger mb-3">Something went wrong</h1>
+                <p class="lead">The application could not load a required file and cannot show reliable results.</p>
+                <div class="alert alert-danger text-start mt-4" role="alert">
+                    <strong>Details:</strong> {{ error }}
+                </div>
+                <p class="text-muted small mt-4">This has been logged. Please contact the maintainers if the problem persists.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

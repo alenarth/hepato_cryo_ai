@@ -1,0 +1,9 @@
+-r requirements.txt
+scikit-learn
+joblib
+pandas
+matplotlib
+seaborn
+torch
+xgboost
+jupyter

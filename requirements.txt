@@ -1,9 +1,2 @@
 flask
-pandas
 numpy
-scikit-learn
-joblib
-seaborn
-matplotlib
-xgboost
-torch

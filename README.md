@@ -54,7 +54,7 @@ python app.py
 ```
 
 Then open `http://127.0.0.1:5000`. The runtime environment needs only
-`flask` and `numpy` (about 67 MB installed): inference for both models runs
+`flask` and `numpy` (about 45 MB installed): inference for both models runs
 on NumPy alone, from weights exported ahead of time (`models/nn_weights.npz`,
 `models/rf_trees.npz`) -- no scikit-learn and no PyTorch are required to
 serve predictions.

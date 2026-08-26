@@ -120,10 +120,10 @@ Test R² = 0.9771 ± 0.0019 — well under the 0.05 sensitivity threshold, resul
 - `RESULTS_SUMMARY.md` — this file.
 
 **Not touched in this pass** (by design, deferred to a later step): `app.py`, HTML templates,
-figures in `static/images/` and `notebooks/validation_images/`, the legacy polynomial-feature
+figures in `static/images/`, the legacy polynomial-feature
 NN pipeline artifact, `random_forest_model.pkl`, `random_forest.ipynb`.
 
-> **Note (reorganization pass):** `notebooks/validation_images/` and the legacy polynomial-feature
-> pipeline artifact mentioned above have since been removed; `nn_export.npz`/`nn_inference.py`
+> **Note (reorganization pass):** the legacy polynomial-feature
+> pipeline artifact mentioned above has since been removed; `nn_export.npz`/`nn_inference.py`
 > now live at `models/nn_weights.npz`/`src/nn_inference.py`; `random_forest.ipynb` is now
 > `notebooks/01_random_forest.ipynb`. This file otherwise reflects the state at the time it was written.

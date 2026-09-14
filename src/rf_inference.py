@@ -81,16 +81,26 @@ def predict(X):
 
     n_trees = state["n_estimators"]
     offsets = state["offsets"]
-    preds = np.zeros((n_trees, X.shape[0]), dtype=np.float64)
 
+    # Accumulate tree by tree, in tree order, then divide once -- exactly what
+    # scikit-learn's _accumulate_prediction does (``out += prediction`` per tree,
+    # ``out /= n_estimators`` at the end).
+    #
+    # This must NOT be written as ``np.stack(preds).mean(axis=0)``: NumPy switches
+    # between pairwise and sequential summation depending on the array's shape and
+    # strides, so a stacked mean matches scikit-learn bit-for-bit on a wide batch
+    # but drifts by ~1e-14 on the single-row calls the web app actually makes.
+    # Summing in this explicit order is identical for every input shape.
+    total = np.zeros(X.shape[0], dtype=np.float64)
     for k in range(n_trees):
-        preds[k] = _predict_tree_batch(
+        total += _predict_tree_batch(
             X, int(offsets[k]),
             state["feature"], state["threshold"],
             state["children_left"], state["children_right"], state["value"],
         )
+    total /= n_trees
 
-    return preds.mean(axis=0)
+    return total
 
 
 def predict_one(dmso, trehalose):

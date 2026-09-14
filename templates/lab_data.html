@@ -24,11 +24,32 @@
 
         <p class="text-muted lead">Performance comparison between AI model predictions and empirical laboratory data.</p>
 
-
-
     </div>
 
+</div>
 
+<div class="row justify-content-center mb-5">
+
+    <div class="col-lg-11">
+
+        <div class="alert alert-secondary border shadow-sm mb-0" role="note">
+
+            <h6 class="fw-bold mb-2">Dataset composition</h6>
+
+            {% set excl = dataset.get('excluded_samples') %}
+
+            <p class="mb-0 small text-justify">The models on this page were trained on
+            {{ dataset.get('n_total') }} HepG2 observations. Samples of undocumented provenance were
+            excluded from the dataset: {{ excl.get('count') }} measurements matching
+            <code>{{ excl.get('criterion') }}</code> were removed, reducing the dataset from
+            {{ excl.get('dataset_size_before') }} to {{ excl.get('dataset_size_after') }} samples.
+            The origin and experimental conditions of those measurements could not be established.
+            The original <code>INDEX</code> values of the remaining rows were left unchanged, so every
+            record remains traceable to the source bench records.</p>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -106,7 +127,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows moderate negative correlation with viability (r = −0.574), consistent with dose-dependent toxicity. Trehalose shows near-zero linear correlation (r = 0.003), reflecting a non-linear relationship that both models capture directly from the raw concentration values, without any hand-engineered polynomial features. SFB's apparent positive correlation (r = 0.655) is confounded rather than causal: SFB acts as a balance/diluent variable (DMSO + Trehalose + SFB = 100% in 208/216 rows; 8 rows = 10%), and including it adds negligible predictive value to the RF model while inflating SFB's apparent feature importance at DMSO's expense. SFB is therefore excluded from the feature set.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows moderate negative correlation with viability (r = −0.562), consistent with dose-dependent toxicity. Trehalose shows near-zero linear correlation (r = 0.048), reflecting a non-linear relationship that both models capture directly from the raw concentration values, without any hand-engineered polynomial features. SFB's apparent positive correlation (r = 0.622) is confounded rather than causal: SFB acts as a balance/diluent variable (DMSO + Trehalose + SFB = 100% in 198/{{ dataset.get('n_total') }} rows; 8 rows = 10%), and including it adds negligible predictive value to the RF model while inflating SFB's apparent feature importance at DMSO's expense. SFB is therefore excluded from the feature set.</p>
 
 
 
@@ -142,7 +163,7 @@
 
 
 
-                        <p class="text-muted small mb-4">Histogram of post-thaw viability across all 216 experimental observations.</p>
+                        <p class="text-muted small mb-4">Histogram of post-thaw viability across all {{ dataset.get('n_total') }} experimental observations.</p>
 
 
 
@@ -482,7 +503,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO dominates (~77%) the model's predictions, consistent with its strong dose-dependent toxicity. Trehalose contributes ~23%, reflecting its complementary but non-linear role in cryopreservation outcomes.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO dominates (~{{ '%.0f' % (rf_metrics.get('feature_importance').get('% DMSO') * 100) }}%) the model's predictions, consistent with its strong dose-dependent toxicity. Trehalose contributes ~{{ '%.0f' % (rf_metrics.get('feature_importance').get('TREHALOSE') * 100) }}%, reflecting its complementary but non-linear role in cryopreservation outcomes.</p>
 
 
 
@@ -566,7 +587,7 @@
 
 
 
-                        <p>A deep neural network was trained using PyTorch on the two raw cryoprotectant concentrations (% DMSO, trehalose) directly — no polynomial feature engineering. The non-linear toxicity relationship is captured by the network itself rather than by hand-built features. The architecture uses 3 hidden layers (128→64→32 neurons) with ReLU activations, regularized with weight decay (L2, 1e-4) and early stopping on a dedicated validation set — no Batch Normalization or Dropout are used. Training happens in PyTorch; in production, predictions are served by a NumPy-only reimplementation of the trained network, so the deployed application does not depend on PyTorch.</p>
+                        <p>A deep neural network was trained using PyTorch on the two raw cryoprotectant concentrations (% DMSO, trehalose) directly — no polynomial feature engineering. The non-linear toxicity relationship is captured by the network itself rather than by hand-built features. The architecture uses 3 hidden layers (128→64→32 neurons) with ReLU activations, regularized by the configuration selected on validation loss alone: {% set wc = nn_metrics.get('winning_config') %}{% if wc.get('use_bn') %}Batch Normalization{% else %}no Batch Normalization{% endif %}, {% if wc.get('dropout') > 0 %}dropout {{ wc.get('dropout') }}{% else %}no dropout{% endif %}, {% if wc.get('weight_decay') > 0 %}weight decay (L2, {{ wc.get('weight_decay') }}){% else %}no weight decay{% endif %}, and early stopping on a dedicated validation set. Training happens in PyTorch; in production, predictions are served by a NumPy-only reimplementation of the trained network, so the deployed application does not depend on PyTorch.</p>
 
 
 

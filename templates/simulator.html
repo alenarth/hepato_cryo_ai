@@ -142,27 +142,30 @@
                     <tbody>
                         {% set bc = rf_metrics.get('best_combinations') %}
                         {% set tied = bc.get('global_tied') %}
+                        {% set dmso_tied = bc.get('dmso_only_tied') %}
+                        {% set treh_tied = bc.get('treh_only_tied') %}
+                        {% macro span(lo, hi) %}{% if lo == hi %}{{ lo|int }}{% else %}{{ lo|int }}–{{ hi|int }}{% endif %}{% endmacro %}
                         <tr>
                             <td><strong>Optimal Global Combined</strong></td>
-                            <td>{{ tied.get('dmso_range')[0]|int }}–{{ tied.get('dmso_range')[1]|int }}</td>
-                            <td>{{ tied.get('trehalose_range')[0]|int }}–{{ tied.get('trehalose_range')[1]|int }}</td>
+                            <td>{{ span(tied.get('dmso_range')[0], tied.get('dmso_range')[1]) }}</td>
+                            <td>{{ span(tied.get('trehalose_range')[0], tied.get('trehalose_range')[1]) }}</td>
                             <td class="text-success fw-bold">{{ tied.get('viability') }}%</td>
                         </tr>
                         <tr>
                             <td><strong>Optimal DMSO Alone</strong></td>
-                            <td>{{ bc.get('dmso_only').get('dmso') }}</td>
-                            <td>0.0</td>
-                            <td class="text-success fw-bold">{{ bc.get('dmso_only').get('viability') }}%</td>
+                            <td>{{ span(dmso_tied.get('dmso_range')[0], dmso_tied.get('dmso_range')[1]) }}</td>
+                            <td>0</td>
+                            <td class="text-success fw-bold">{{ dmso_tied.get('viability') }}%</td>
                         </tr>
                         <tr>
                             <td><strong>Optimal Trehalose Alone</strong></td>
-                            <td>0.0</td>
-                            <td>{{ bc.get('treh_only').get('trehalose') }}</td>
-                            <td class="text-warning fw-bold">{{ bc.get('treh_only').get('viability') }}%</td>
+                            <td>0</td>
+                            <td>{{ span(treh_tied.get('trehalose_range')[0], treh_tied.get('trehalose_range')[1]) }}</td>
+                            <td class="text-warning fw-bold">{{ treh_tied.get('viability') }}%</td>
                         </tr>
                     </tbody>
                 </table>
-                <p class="text-muted small mb-0">The Random Forest predicts by constant regions, so the global optimum is a plateau of {{ tied.get('combinations')|length }} tied grid combinations (step 1%), reported above as a range, not a single arbitrarily-chosen point. Values derived from a systematic search across all concentration combinations within the experimental range of the training data.</p>
+                <p class="text-muted small mb-0">The Random Forest predicts by constant regions, so each optimum above is a plateau of equally-ranked grid combinations (step 1%), not a single point: {{ tied.get('combinations')|length }} combinations tie for the global optimum, {{ dmso_tied.get('combinations')|length }} for DMSO alone and {{ treh_tied.get('combinations')|length }} for trehalose alone. Each is reported as a range rather than one arbitrarily-chosen member. Values derived from a systematic search across all concentration combinations within the experimental range of the training data.</p>
             </div>
         </div>
     </div>

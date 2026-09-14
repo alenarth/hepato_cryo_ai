@@ -1,129 +1,219 @@
 # Results Summary
 
 This file is the bridge between the code (notebooks, `metrics.json`) and the paper.
-All numbers below are read directly from `metrics.json`, generated on 2026-08-16.
+All numbers below are read directly from `metrics.json`, generated on 2026-09-04.
 Do not hand-edit numbers here without regenerating `metrics.json` from the notebooks first.
 
-Dataset: 216 samples (HepG2). Split: 172 train+validation / 44 test (`test_size=0.2,
-random_state=42`), identical across every notebook. For the neural network, the 172
-train+validation samples are further split into 129 fit / 43 validation
+Dataset: **206 samples** (HepG2). Split: 164 train+validation /
+42 test (`test_size=0.2, random_state=42`), identical across every
+notebook. For the neural network, the 164 train+validation samples are further
+split into 123 fit / 41 validation
 (`test_size=0.25, random_state=42`).
+
+## Sample exclusion — 2% DMSO measurements (2026-09-04)
+
+10 samples recorded at **2% DMSO** (original `INDEX`
+1–10, all with 0% trehalose and
+98% SFB) were **removed from the dataset**.
+
+| Item | Value |
+|---|---|
+| Samples removed | 10 |
+| Criterion | `% DMSO == 2.0` |
+| Date of exclusion | 2026-09-04 |
+| Dataset size | 216 → **206** |
+
+**Reason.** A provenance check concluded that these measurements were not produced by this
+research group, and that the experimental conditions under which they were obtained are neither
+known nor documented. Because their origin and methodology could not be attested, they were
+excluded in full. The decision was taken by the authors responsible for the experiments.
+
+**Traceability.** The `INDEX` column of the remaining rows was deliberately **not renumbered**
+(it now starts at 11), so every row can still be matched to the original bench spreadsheets. The
+previous version of `data/raw/hepg2.csv` is preserved in the git history — no commented-out rows
+are kept inside the CSV and no `hepg2_old.csv` copy exists in the repository.
+
+**Consequence.** Every model was retrained from scratch on the 206-sample dataset and
+every derived result — metrics, figures, exported model artifacts and the web application — was
+recomputed. The neural network's regularization configuration was re-selected by the
+validation-loss search rather than carried over.
+
+### Outstanding manual work
+
+`static/images/wetlab_dmso_viability.png` still contains the 2% DMSO bar. It is a bench figure
+produced in GraphPad with no generating code in this repository, and **will be redrawn manually
+by one of the authors**. The file is intentionally left untouched here, together with the other
+two `wetlab_*.png` figures.
 
 ## Anchor values (must not change without investigation)
 
 | Item | Value |
 |---|---|
-| Random Forest — R² test | 0.9797 |
-| Random Forest — RMSE test | 5.0245 |
-| Random Forest — CV R² | 0.9602 ± 0.0196 |
-| Random Forest — feature importance | DMSO ≈ 0.777 / Trehalose ≈ 0.223 |
-| Linear regression baseline — R² test | 0.4775 |
-| Polynomial regression baseline — R² test | 0.6096 |
-| Data split | 129 / 43 / 44 |
+| Total samples | 206 |
+| Splits | 164 train+val / 42 test; 123 fit / 41 validation |
+| Random Forest — R² test | 0.9840 |
+| Random Forest — RMSE test | 4.6043 |
+| Random Forest — CV R² | 0.9598 ± 0.0131 |
+| Random Forest — feature importance | DMSO ≈ 0.7346 / Trehalose ≈ 0.2654 |
+| Linear regression baseline — R² test | 0.5217 |
+| Polynomial regression baseline — R² test | 0.5823 |
+| SVR — R² test | 0.6485 |
+| Optimum plateau (RF) | 15 combinations at 92.67%, DMSO 13–17%, trehalose 0–2% |
+| Best trehalose alone | 16–25% at 77.57% |
+| Data split | 123 / 41 / 42 |
 
 ## Random Forest (features: raw `% DMSO`, `TREHALOSE`)
 
 | Metric | Value |
 |---|---|
-| R² (test, 44 samples) | 0.9797 |
-| RMSE (test) | 5.0245 |
-| CV R² (5-fold, mean ± std) | 0.9602 ± 0.0196 |
-| CV RMSE (5-fold, mean ± std) | 6.9381 ± 1.2493 |
-| Feature importance — % DMSO | 0.7768 |
-| Feature importance — TREHALOSE | 0.2232 |
+| R² (test, 42 samples) | 0.9840 |
+| RMSE (test) | 4.6043 |
+| CV R² (5-fold, mean ± std) | 0.9598 ± 0.0131 |
+| CV RMSE (5-fold, mean ± std) | 6.9691 ± 1.0810 |
+| Feature importance — % DMSO | 0.7346 |
+| Feature importance — TREHALOSE | 0.2654 |
+| Permutation importance — % DMSO | 1.9637 ± 0.1637 |
+| Permutation importance — TREHALOSE | 0.6033 ± 0.0637 |
 | Hyperparameters | `n_estimators=200, random_state=42` |
 
 **Best combinations (exhaustive grid search, DMSO/Trehalose 0–100% step 1%, sum ≤ 100%):**
 
-| Strategy | DMSO % | Trehalose % | Predicted viability % |
-|---|---|---|---|
-| Global optimum | 2.0 | 1.0 | 95.19 |
-| Best DMSO-only (no trehalose) | 2.0 | 0.0 | 95.19 |
-| Best trehalose-only (no DMSO) | 0.0 | 23.0 | 78.48 |
+The Random Forest predicts by piecewise-constant regions, so every optimum is a **plateau** of
+grid points tied at exactly the same predicted value, not a single point. Each row below is
+therefore reported as a range.
+
+| Strategy | DMSO % | Trehalose % | Predicted viability % | Tied combinations |
+|---|---|---|---|---|
+| Global optimum | 13–17 | 0–2 | 92.67 | 15 |
+| Best DMSO-only (no trehalose) | 13–17 | 0 | 92.67 | 5 |
+| Best trehalose-only (no DMSO) | 0 | 16–25 | 77.57 | 10 |
 
 ## Neural Network (PyTorch → NumPy export; features: raw `% DMSO`, `TREHALOSE`)
 
-Architecture: `2 → 128 → 64 → 32 → 1`, ReLU, Adam (lr=1e-3),
+Architecture: `2 -> 128 -> 64 -> 32 -> 1 (ReLU)`, Adam (lr=1e-3),
 `ReduceLROnPlateau(factor=0.5, patience=30, min_lr=1e-6)`, MSE loss, batch_size=32,
-max 2000 epochs, early stopping on validation loss. Polynomial feature expansion
-(previously DMSO², DMSO×Trehalose, Trehalose²) was removed from the pipeline.
+max 2000 epochs, early stopping on validation loss. No feature engineering: the two raw
+concentrations are the only inputs.
 
-**Hyperparameter search** (24 configs × 3 seeds [0, 1, 42], selected by mean
-validation MSE — never by test):
+**Hyperparameter search** (8 configs × 2 seeds
+[0, 42], 16 runs, selected by mean validation MSE — never by test).
+The configuration that won on the previous 216-sample dataset was not
+assumed to still be best; the search was re-run from scratch and **the winner changed**.
 
-| batch_norm | dropout | weight_decay | patience | mean val loss | std val loss |
-|---|---|---|---|---|---|
-| **False** | **0.0** | **1e-4** | **100** | **45.77** | **4.20** |
-| False | 0.1 | 1e-4 | 200 | 47.23 | 4.68 |
-| False | 0.1 | 1e-4 | 100 | 47.54 | 4.94 |
-| False | 0.0 | 0 | 100 | 48.93 | 5.60 |
-| True | 0.0 | 1e-4 | 200 | 61.61 | 9.34 |
-| True | 0.2 | 1e-4 | 100 | 92.79 | 7.76 |
+| batch_norm | dropout | weight_decay | patience | mean val loss | std val loss | mean best epoch |
+|---|---|---|---|---|---|---|
+| **True** | **0.0** | **0** | **100** | **64.94** | **12.53** | **523** |
+| True | 0.0 | 1e-4 | 100 | 65.40 | 6.62 | 510 |
+| False | 0.0 | 1e-4 | 100 | 75.11 | 52.17 | 451 |
+| False | 0.0 | 0 | 100 | 83.73 | 63.18 | 591 |
+| True | 0.2 | 0 | 100 | 101.99 | 4.99 | 410 |
+| True | 0.2 | 1e-4 | 100 | 104.25 | 8.41 | 410 |
+| False | 0.2 | 0 | 100 | 105.95 | 24.17 | 511 |
+| False | 0.2 | 1e-4 | 100 | 153.30 | 9.39 | 266 |
 
-*(full 24-row table is printed in `notebooks/neural_network.ipynb`; winning row bolded above)*
+**Winning configuration:** `batch_norm=True, dropout=0.0, weight_decay=0, patience=100` (mean validation loss 64.9415)
 
-**Winning configuration:** `batch_norm=False, dropout=0.0, weight_decay=1e-4, patience=100`
+Note the change from the previous dataset: BatchNorm is now selected, and weight decay is not.
+The two BatchNorm configurations are also markedly more stable across seeds (std of validation
+loss ~6–13) than the BatchNorm-free ones (std ~52–63).
 
 | Metric | Value |
 |---|---|
-| R² — fit (129) | 0.9795 |
-| RMSE — fit (129) | 5.4652 |
-| R² — validation (43) | 0.9576 |
-| RMSE — validation (43) | 6.5839 |
-| R² — test (44) | 0.9788 |
-| RMSE — test (44) | 5.1370 |
-| Best epoch (early stopping) | 441 |
-| Test residuals — mean | 0.3362 |
-| Test residuals — std | 5.1260 |
-| CV R² (5-fold, mean ± std) | 0.9680 ± 0.0124 |
-| CV RMSE (5-fold, mean ± std) | 6.3072 ± 0.9676 |
+| R² — fit (123) | 0.9707 |
+| RMSE — fit (123) | 6.1650 |
+| R² — validation (41) | 0.9538 |
+| RMSE — validation (41) | 7.4888 |
+| R² — test (42) | 0.9818 |
+| RMSE — test (42) | 4.9177 |
+| Best epoch (early stopping) | 523 |
+| Test residuals — mean | -0.6783 |
+| Test residuals — std | 4.8707 |
+| CV R² (5-fold, mean ± std) | 0.9643 ± 0.0105 |
+| CV RMSE (5-fold, mean ± std) | 6.6049 ± 0.9289 |
 
-**Seed-stability check** (control only, not a headline result; seeds 0, 1, 2, 42, 123):
+Per-fold CV R²: 0.9488 / 0.9595 / 0.9615 / 0.9731 / 0.9785. The `StandardScaler` is refit inside each fold.
 
-Test R² = 0.9771 ± 0.0019 — well under the 0.05 sensitivity threshold, result is stable.
+The test set was evaluated exactly once, after the configuration was fixed on validation loss.
+Test R² = 0.9818 is comfortably above the 0.85 sanity threshold.
 
-**PyTorch → NumPy export validation** (dense grid, DMSO/Trehalose 0–100% step 1%, sum ≤ 100%,
-5151 points): max absolute difference = 7.22e-05 (< 1e-4 required) — **PASS**.
+**Seed-stability check** (control only, not a headline result; seeds
+[0, 1, 2, 42, 123]): 0: 0.9825, 1: 0.9741, 2: 0.9757, 42: 0.9818, 123: 0.9772.
+
+Test R² = 0.9782 ± 0.0033
+— well under the 0.05 sensitivity threshold, so the result is stable across seeds.
+
+## NumPy export acceptance tests
+
+Both deployed models run on NumPy-only exports. Both exports are validated on a dense grid
+(DMSO/Trehalose 0–100%, step 1%, sum ≤ 100% — 5151 points).
+
+| Export | Criterion | Result | Status |
+|---|---|---|---|
+| `models/rf_trees.npz` vs scikit-learn | difference exactly 0 | max abs diff = 0, 0 mismatching points | **PASS** |
+| `models/nn_weights.npz` vs PyTorch | max abs diff < 1e-4 | max abs diff = 7.714e-05 | **PASS** |
+
+The Random Forest export is checked both batched and one row at a time. `src/rf_inference.py`
+accumulates tree predictions sequentially and divides once, mirroring scikit-learn's own
+accumulation order: an `np.stack(...).mean(axis=0)` matches on a wide batch but drifts by ~1e-14
+on the single-row calls the web application actually makes.
+
+The winning configuration now uses BatchNorm, which the exporter folds into the adjacent Linear
+layer, so NumPy inference remains a plain sequence of affine layers with ReLU.
 
 ## Baselines
 
 | Model | R² test | RMSE test | R² CV (5-fold) |
 |---|---|---|---|
-| Linear regression (raw features) | 0.4775 | 25.5001 | 0.3399 |
-| Polynomial regression (degree 2) | 0.6096 | 22.0430 | 0.3787 |
+| Linear regression (raw features) | 0.5217 | 25.1770 | 0.2890 |
+| Polynomial regression (degree 2) | 0.5823 | 23.5275 | 0.3654 |
 
 ## Model comparison
 
-| Model | R² test | RMSE test |
-|---|---|---|
-| Random Forest | 0.9797 | 5.0245 |
-| Neural Network (raw features) | 0.9788 | 5.1370 |
-| Polynomial regression (degree 2) | 0.6096 | 22.0430 |
-| Linear regression | 0.4775 | 25.5001 |
+| Model | R² test | RMSE test | R² CV (5-fold) |
+|---|---|---|---|
+| Random Forest | 0.9840 | 4.6043 | 0.9598 |
+| Neural Network (ANN) | 0.9818 | 4.9177 | 0.9643 |
+| XGBoost | 0.9814 | 4.9602 | 0.9627 |
+| SVR (raw) | 0.6485 | 21.5835 | 0.3417 |
+| Polynomial regression (degree 2) | 0.5823 | 23.5275 | 0.3654 |
+| Linear regression | 0.5217 | 25.1770 | 0.2890 |
 
-## Example prediction — 5% DMSO / 10% Trehalose
+Also exported to `data/comparison_table.csv`.
+
+## Example prediction — 10% DMSO / 0% Trehalose
+
+The combination quoted in a figure legend of the paper.
 
 | Model | Predicted viability % |
 |---|---|
-| Random Forest | 65.76 |
-| Neural Network (PyTorch) | 69.23 |
-| Neural Network (NumPy export) | 69.23 |
+| Random Forest (scikit-learn) | 91.22 |
+| Random Forest (NumPy export) | 91.22 |
+| Neural Network (PyTorch) | 89.69 |
+| Neural Network (NumPy export) | 89.69 |
 
-## Files produced by this pass
+## Reproducing this pass
 
-- `notebooks/neural_network.ipynb` — retrained on raw features, hyperparameter search, final
-  model, 5-fold CV, seed-stability check, NumPy export, acceptance test.
-- `nn_model.pth` — retrained PyTorch weights (2-feature input; reproducibility/provenance).
-- `nn_export.npz` — StandardScaler parameters + Linear-layer weights for NumPy-only inference.
-- `nn_inference.py` — `predict(dmso, trehalose)`, NumPy only, no torch/sklearn.
-- `metrics.json` — single source of truth for all metrics on this page.
-- `RESULTS_SUMMARY.md` — this file.
+Run the notebooks in `notebooks/` in numeric order. `metrics.json` is created by notebook 01 and
+extended by 02, 03 and 04; `data/comparison_table.csv` and `data/hyperparameters.csv` are derived
+from it in notebook 04, so the three files cannot drift apart.
 
-**Not touched in this pass** (by design, deferred to a later step): `app.py`, HTML templates,
-figures in `static/images/`, the legacy polynomial-feature
-NN pipeline artifact, `random_forest_model.pkl`, `random_forest.ipynb`.
+1. `01_random_forest.ipynb` — Random Forest, exhaustive grid search, `rf_trees.npz` export and
+   its exactness test; creates `metrics.json`.
+2. `02_neural_network.ipynb` — EDA figures, regularization search, final model, 5-fold CV,
+   seed-stability check, `nn_weights.npz` export and its acceptance test.
+3. `03_model_comparison.ipynb` — XGBoost and SVR, comparison figures, learning curves.
+4. `04_baselines.ipynb` — linear and polynomial baselines; final assembly of `metrics.json`,
+   `comparison_table.csv` and `hyperparameters.csv`.
 
-> **Note (reorganization pass):** the legacy polynomial-feature
-> pipeline artifact mentioned above has since been removed; `nn_export.npz`/`nn_inference.py`
-> now live at `models/nn_weights.npz`/`src/nn_inference.py`; `random_forest.ipynb` is now
-> `notebooks/01_random_forest.ipynb`. This file otherwise reflects the state at the time it was written.
+## Files regenerated in this pass
+
+- `data/raw/hepg2.csv` — 10 rows removed (216 → 206 samples).
+- All four notebooks in `notebooks/` — re-executed end to end with stored outputs.
+- `models/random_forest_model.pkl`, `models/rf_trees.npz`, `models/nn_model.pth`,
+  `models/nn_weights.npz` — retrained and re-exported.
+- `metrics.json`, `data/comparison_table.csv`, `data/hyperparameters.csv`.
+- The 14 code-generated figures in `static/images/`.
+- `README.md`, `RESULTS_SUMMARY.md`, `app.py`, `templates/`, `src/rf_inference.py`, `tests/`.
+
+**Deliberately not touched:** the three `wetlab_*.png` bench figures (see *Outstanding manual
+work* above).

@@ -1,7 +1,7 @@
 ,R2_test,RMSE_test,R2_CV
-Random Forest,0.9797,5.0245,0.9602
-Neural Network (ANN),0.9788,5.137,0.968
-XGBoost,0.9773,5.3198,0.9605
-Polynomial Regression (deg=2),0.6096,22.043,0.3787
-SVR (raw),0.5441,23.8188,0.2878
-Linear Regression (raw),0.4775,25.5001,0.3399
+Random Forest,0.984,4.6043,0.9598
+Neural Network (ANN),0.9818,4.9177,0.9643
+XGBoost,0.9814,4.9602,0.9627
+SVR (raw),0.6485,21.5835,0.3417
+Polynomial Regression (deg=2),0.5823,23.5275,0.3654
+Linear Regression (raw),0.5217,25.177,0.289

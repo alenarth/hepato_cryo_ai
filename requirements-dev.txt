@@ -7,3 +7,4 @@ seaborn
 torch
 xgboost
 jupyter
+nbconvert

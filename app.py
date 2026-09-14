@@ -26,7 +26,8 @@ _METRICS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "metric
 def get_metrics():
     """Load and cache metrics.json, the single source of truth for every
     number shown by the templates (Random Forest, neural network, baselines,
-    best combinations, example predictions).
+    best combinations, example predictions, and the dataset description --
+    sample counts and split sizes included).
 
     Raises
     ------
@@ -73,7 +74,11 @@ def handle_missing_artifact(e):
 
 @app.route("/")
 def home():
-    return render_template("index.html", nn_available=nn_ready())
+    return render_template(
+        "index.html",
+        nn_available=nn_ready(),
+        dataset=get_metrics()["dataset"],
+    )
 
 
 @app.route("/application", methods=["GET", "POST"])
@@ -126,6 +131,7 @@ def application():
         trehalose=trehalose_value,
         error=error_msg,
         selected_model=selected_model,
+        dataset=metrics["dataset"],
     )
 
 
@@ -137,6 +143,7 @@ def lab_data():
         nn_available=nn_ready(),
         nn_metrics=metrics["neural_network"],
         rf_metrics=metrics["random_forest"],
+        dataset=metrics["dataset"],
     )
 
 

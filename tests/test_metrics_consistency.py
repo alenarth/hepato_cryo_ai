@@ -62,22 +62,59 @@ def test_rendered_pages_match_metrics_json():
 
 
 def test_example_prediction_matches_metrics_json():
+    """The prediction quoted in the paper's figure legend (10% DMSO, 0% trehalose)
+    must be exactly what the app serves for those inputs."""
     with open(os.path.join(ROOT, "metrics.json"), encoding="utf-8") as f:
         metrics = json.load(f)
-    example = metrics["example_prediction_5dmso_10trehalose"]
+    example = metrics["example_prediction_10dmso_0trehalose"]
 
     import app as app_module
     client = app_module.app.test_client()
-    r = client.post("/application", data={"dmso": "5", "trehalose": "10", "model": "both"})
+    r = client.post(
+        "/application",
+        data={"dmso": str(example["dmso"]), "trehalose": str(example["trehalose"]), "model": "both"},
+    )
     html = r.get_data(as_text=True)
 
     assert f"{round(example['random_forest'], 2)}" in html, "RF example prediction mismatch"
     assert f"{round(example['neural_network_numpy'], 2)}" in html, "NN example prediction mismatch"
-    print("PASS: 5% DMSO / 10% trehalose prediction matches metrics.json")
+    print(f"PASS: {example['dmso']:.0f}% DMSO / {example['trehalose']:.0f}% trehalose "
+          f"prediction matches metrics.json")
+
+
+def test_dataset_size_comes_from_metrics_json():
+    """Both pages that describe the dataset must report the sample count that
+    metrics.json declares, never a number baked into a template."""
+    with open(os.path.join(ROOT, "metrics.json"), encoding="utf-8") as f:
+        metrics = json.load(f)
+    n_total = metrics["dataset"]["n_total"]
+    excluded_before = metrics["dataset"]["excluded_samples"]["dataset_size_before"]
+
+    import app as app_module
+    client = app_module.app.test_client()
+
+    html_lab = client.get("/lab-data").get_data(as_text=True)
+    assert str(n_total) in html_lab, f"/lab-data does not report n_total={n_total}"
+
+    # The pre-exclusion count may only appear where the page explains the
+    # exclusion itself ("reduced from 216 to 206"), never as a live dataset size.
+    stale = [
+        f"{excluded_before} experimental observations",
+        f"all {excluded_before}",
+        f"/{excluded_before} rows",
+    ]
+    for phrase in stale:
+        assert phrase not in html_lab, f"/lab-data still describes the dataset as {phrase!r}"
+
+    excl = metrics["dataset"]["excluded_samples"]
+    assert str(excl["count"]) in html_lab, "/lab-data does not report the excluded-sample count"
+    assert excl["criterion"] in html_lab, "/lab-data does not state the exclusion criterion"
+    print(f"PASS: /lab-data reports {n_total} samples and the exclusion note from metrics.json")
 
 
 if __name__ == "__main__":
     test_no_hardcoded_metric_defaults()
     test_rendered_pages_match_metrics_json()
     test_example_prediction_matches_metrics_json()
+    test_dataset_size_comes_from_metrics_json()
     print("\nALL CONSISTENCY TESTS PASSED.")

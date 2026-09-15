@@ -52,14 +52,14 @@ two `wetlab_*.png` figures.
 | Total samples | 206 |
 | Splits | 164 train+val / 42 test; 123 fit / 41 validation |
 | Random Forest — R² test | 0.9840 |
-| Random Forest — RMSE test | 4.6043 |
+| Random Forest — RMSE test (pp) | 4.6043 |
 | Random Forest — CV R² | 0.9598 ± 0.0131 |
 | Random Forest — feature importance | DMSO ≈ 0.7346 / Trehalose ≈ 0.2654 |
 | Linear regression baseline — R² test | 0.5217 |
 | Polynomial regression baseline — R² test | 0.5823 |
 | SVR — R² test | 0.6485 |
-| Optimum plateau (RF) | 15 combinations at 92.67%, DMSO 13–17%, trehalose 0–2% |
-| Best trehalose alone | 16–25% at 77.57% |
+| Highest predicted viability, RF (plateau) | 15 combinations at 92.67%, DMSO 13–17%, trehalose 0–2% |
+| Highest predicted viability, trehalose alone (RF) | 16–25% at 77.57% |
 | Data split | 123 / 41 / 42 |
 
 ## Random Forest (features: raw `% DMSO`, `TREHALOSE`)
@@ -67,36 +67,39 @@ two `wetlab_*.png` figures.
 | Metric | Value |
 |---|---|
 | R² (test, 42 samples) | 0.9840 |
-| RMSE (test) | 4.6043 |
+| RMSE (test, pp) | 4.6043 |
 | CV R² (5-fold, mean ± std) | 0.9598 ± 0.0131 |
-| CV RMSE (5-fold, mean ± std) | 6.9691 ± 1.0810 |
+| CV RMSE (5-fold, mean ± std, pp) | 6.9691 ± 1.0810 |
 | Feature importance — % DMSO | 0.7346 |
 | Feature importance — TREHALOSE | 0.2654 |
 | Permutation importance — % DMSO | 1.9637 ± 0.1637 |
 | Permutation importance — TREHALOSE | 0.6033 ± 0.0637 |
 | Hyperparameters | `n_estimators=200, random_state=42` |
 
-**Best combinations (exhaustive grid search, DMSO/Trehalose 0–100% step 1%, sum ≤ 100%):**
+**Highest predicted viability (Random Forest; grid of 5,151 points, DMSO/Trehalose 0–100% step 1%,
+sum ≤ 100%; 29 grid points coincide with formulations tested experimentally):**
 
-The Random Forest predicts by piecewise-constant regions, so every optimum is a **plateau** of
-grid points tied at exactly the same predicted value, not a single point. Each row below is
-therefore reported as a range.
+The values below are model predictions. The Random Forest predicts by piecewise-constant regions,
+so each maximum is a **plateau** of grid points tied at exactly the same predicted value, not a
+single point. Each row below is therefore reported as a range.
 
 | Strategy | DMSO % | Trehalose % | Predicted viability % | Tied combinations |
 |---|---|---|---|---|
-| Global optimum | 13–17 | 0–2 | 92.67 | 15 |
-| Best DMSO-only (no trehalose) | 13–17 | 0 | 92.67 | 5 |
-| Best trehalose-only (no DMSO) | 0 | 16–25 | 77.57 | 10 |
+| Highest predicted — combined | 13–17 | 0–2 | 92.67 | 15 |
+| Highest predicted — DMSO alone | 13–17 | 0 | 92.67 | 5 |
+| Highest predicted — trehalose alone | 0 | 16–25 | 77.57 | 10 |
 
 ## Neural Network (PyTorch → NumPy export; features: raw `% DMSO`, `TREHALOSE`)
 
 Architecture: `2 -> 128 -> 64 -> 32 -> 1 (ReLU)`, Adam (lr=1e-3),
 `ReduceLROnPlateau(factor=0.5, patience=30, min_lr=1e-6)`, MSE loss, batch_size=32,
-max 2000 epochs, early stopping on validation loss. No feature engineering: the two raw
-concentrations are the only inputs.
+max 2000 epochs, early stopping on validation loss. The output layer is linear, so the raw
+network output is not bounded; the application limits the displayed prediction to the physical
+range of viability, 0–100%. No feature engineering: the two raw concentrations are the only inputs.
 
 **Hyperparameter search** (8 configs × 2 seeds
-[0, 42], 16 runs, selected by mean validation MSE — never by test).
+[0, 42], 16 runs, selected by mean validation MSE — never by test; early-stopping patience was
+fixed at 100 before the search and is identical for every configuration).
 The configuration that won on the previous 216-sample dataset was not
 assumed to still be best; the search was re-run from scratch and **the winner changed**.
 
@@ -120,21 +123,22 @@ loss ~6–13) than the BatchNorm-free ones (std ~52–63).
 | Metric | Value |
 |---|---|
 | R² — fit (123) | 0.9707 |
-| RMSE — fit (123) | 6.1650 |
+| RMSE — fit (123), pp | 6.1650 |
 | R² — validation (41) | 0.9538 |
-| RMSE — validation (41) | 7.4888 |
+| RMSE — validation (41), pp | 7.4888 |
 | R² — test (42) | 0.9818 |
-| RMSE — test (42) | 4.9177 |
+| RMSE — test (42), pp | 4.9177 |
 | Best epoch (early stopping) | 523 |
-| Test residuals — mean | -0.6783 |
-| Test residuals — std | 4.8707 |
+| Test residuals — mean (pp) | -0.6783 |
+| Test residuals — std (pp) | 4.8707 |
 | CV R² (5-fold, mean ± std) | 0.9643 ± 0.0105 |
-| CV RMSE (5-fold, mean ± std) | 6.6049 ± 0.9289 |
+| CV RMSE (5-fold, mean ± std, pp) | 6.6049 ± 0.9289 |
 
 Per-fold CV R²: 0.9488 / 0.9595 / 0.9615 / 0.9731 / 0.9785. The `StandardScaler` is refit inside each fold.
 
-The test set was evaluated exactly once, after the configuration was fixed on validation loss.
-Test R² = 0.9818 is comfortably above the 0.85 sanity threshold.
+The configuration was fixed on validation loss before the test set was scored. The same external
+partition (42 samples) was used to report the performance of all compared models and in the
+seed-stability check below. Test R² = 0.9818 is above the 0.85 sanity threshold.
 
 **Seed-stability check** (control only, not a headline result; seeds
 [0, 1, 2, 42, 123]): 0: 0.9825, 1: 0.9741, 2: 0.9757, 42: 0.9818, 123: 0.9772.
@@ -162,14 +166,14 @@ layer, so NumPy inference remains a plain sequence of affine layers with ReLU.
 
 ## Baselines
 
-| Model | R² test | RMSE test | R² CV (5-fold) |
+| Model | R² test | RMSE test (pp) | R² CV (5-fold) |
 |---|---|---|---|
 | Linear regression (raw features) | 0.5217 | 25.1770 | 0.2890 |
 | Polynomial regression (degree 2) | 0.5823 | 23.5275 | 0.3654 |
 
 ## Model comparison
 
-| Model | R² test | RMSE test | R² CV (5-fold) |
+| Model | R² test | RMSE test (pp) | R² CV (5-fold) |
 |---|---|---|---|
 | Random Forest | 0.9840 | 4.6043 | 0.9598 |
 | Neural Network (ANN) | 0.9818 | 4.9177 | 0.9643 |

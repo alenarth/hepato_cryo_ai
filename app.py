@@ -51,9 +51,19 @@ def nn_ready():
     """The neural network is available whenever its exported NumPy weights exist.
 
     Inference no longer depends on PyTorch; nn_inference.py loads and caches
-    nn_export.npz on its own.
+    models/nn_weights.npz on its own.
     """
     return os.path.exists(_NN_EXPORT_PATH)
+
+
+def clip_viability(value):
+    """Limit a predicted viability to its physical range, 0-100%.
+
+    The neural network's output layer is linear, so its raw output is not
+    bounded. The exported weights and the inference functions are left
+    untouched; only the value shown to the user is limited.
+    """
+    return min(100.0, max(0.0, float(value)))
 
 
 @app.errorhandler(FileNotFoundError)
@@ -111,11 +121,12 @@ def application():
 
                 # NumPy-only inference for both models: no scikit-learn, no PyTorch.
                 if selected_model in ("rf", "both"):
-                    rf_result = round(float(rf_inference.predict(X)[0]), 2)
+                    rf_result = round(clip_viability(rf_inference.predict(X)[0]), 2)
 
-                # NumPy-only inference: no PyTorch involved in production.
+                # NumPy-only inference: no PyTorch involved in production. The
+                # displayed value is limited to 0-100% (see clip_viability).
                 if selected_model in ("nn", "both") and nn_avail:
-                    nn_result = round(nn_inference.predict(dmso_value, trehalose_value), 2)
+                    nn_result = round(clip_viability(nn_inference.predict(dmso_value, trehalose_value)), 2)
 
         except (ValueError, TypeError):
             error_msg = "Invalid input. Please enter valid numbers."

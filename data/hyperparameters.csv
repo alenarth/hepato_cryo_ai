@@ -3,7 +3,7 @@ Random Forest,n_estimators,200,
 Random Forest,criterion,squared_error,sklearn default
 Random Forest,max_features,1.0,sklearn 1.4+ default (was sqrt in older versions)
 Random Forest,random_state,42,
-Random Forest,n_jobs,-1,
+Random Forest,n_jobs,None,sklearn default; n_jobs=-1 is passed only to learning_curve
 XGBoost,n_estimators,100,
 XGBoost,learning_rate,0.1,
 XGBoost,max_depth,6,default
@@ -19,7 +19,7 @@ Linear Regression,fit_intercept,True,default; no other hyperparameters
 Polynomial Regression,degree,2,
 Polynomial Regression,include_bias,False,
 Polynomial Regression,interaction_only,False,default
-Neural Network (ANN),architecture,128 -> 64 -> 32 -> 1,fully connected
+Neural Network (ANN),architecture,128 -> 64 -> 32 -> 1,fully connected; linear (unbounded) output layer
 Neural Network (ANN),input_features,2,"raw: % DMSO, TREHALOSE (no polynomial expansion)"
 Neural Network (ANN),batch_normalization,True,used in the winning configuration
 Neural Network (ANN),activation,ReLU,
@@ -30,7 +30,7 @@ Neural Network (ANN),weight_decay,0.0,no L2 regularization in the winning config
 Neural Network (ANN),lr_scheduler,ReduceLROnPlateau,
 Neural Network (ANN),lr_scheduler_factor,0.5,
 Neural Network (ANN),lr_scheduler_patience,30,
-Neural Network (ANN),early_stopping_patience,100,selected by a validation-loss hyperparameter search
+Neural Network (ANN),early_stopping_patience,100,fixed before the search; identical for every config
 Neural Network (ANN),max_epochs,2000,
 Neural Network (ANN),batch_size,32,
 Neural Network (ANN),loss_function,MSELoss,

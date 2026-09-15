@@ -74,13 +74,13 @@
                     {% if rf_result is not none and nn_result is not none %}
                     {% set diff = (rf_result - nn_result)|abs %}
                     <div class="text-center small text-muted mb-2">
-                        Model agreement: <strong>{{ '%.1f' % diff }}pp</strong> difference
+                        Agreement between models: <strong>{{ '%.1f' % diff }} pp</strong> difference
                         {% if diff < 5 %}
-                        <span class="badge bg-success ms-1">High confidence</span>
+                        <span class="badge bg-success ms-1">High agreement</span>
                         {% elif diff < 15 %}
-                        <span class="badge bg-warning text-dark ms-1">Moderate</span>
+                        <span class="badge bg-warning text-dark ms-1">Moderate agreement</span>
                         {% else %}
-                        <span class="badge bg-danger ms-1">Models disagree</span>
+                        <span class="badge bg-danger ms-1">Low agreement</span>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -99,22 +99,22 @@
             <div class="card-body">
                 <h4 class="card-title card-heading">Predictive Model Evaluation</h4>
                 {% if nn_available %}
-                <p>Two machine learning models were trained and validated with empirical HepG2 data, both showing high generalization capacity.</p>
+                <p>Two distinct algorithms — a Random Forest and a neural network — were trained on the same HepG2 dataset and evaluated on the same held-out test set.</p>
                 {% else %}
-                <p>A Random Forest model was trained and validated with empirical HepG2 data, showing high generalization capacity.</p>
+                <p>A Random Forest model was trained on HepG2 data and evaluated on a held-out test set.</p>
                 {% endif %}
                 <div class="row text-center mt-4">
                     <div class="{% if nn_available %}col-sm-6{% else %}col-sm-12{% endif %} mb-3">
                         <span class="badge bg-success mb-2">Random Forest</span>
                         <h2 class="fw-bold text-dark">{{ '%.3f' % rf_metrics.get('r2_test') }}</h2>
-                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % rf_metrics.get('rmse_test') }}%)</span>
+                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % rf_metrics.get('rmse_test') }} pp)</span>
                     </div>
                     {% if nn_available %}
                     <div class="col-sm-6 mb-3">
                         <span class="badge mb-2" style="background-color: #d62728;">Neural Network</span>
                         {% if nn_metrics %}
                         <h2 class="fw-bold text-dark">{{ '%.3f' % nn_metrics.get('r2_test') }}</h2>
-                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % nn_metrics.get('rmse_test') }}%)</span>
+                        <span class="text-muted small">R² (RMSE: {{ '%.2f' % nn_metrics.get('rmse_test') }} pp)</span>
                         {% else %}
                         <h2 class="fw-bold text-dark">—</h2>
                         <span class="text-muted small">Metrics unavailable</span>
@@ -127,8 +127,8 @@
 
         <div class="card content-card">
             <div class="card-body">
-                <h4 class="card-title card-heading">Best Cryoprotectants Found</h4>
-                <p>During an exhaustive grid search performed by the <strong>Random Forest</strong> model, these combinations mathematically maximized predicted cell survival:</p>
+                <h4 class="card-title card-heading">Highest Predicted Viability</h4>
+                <p>The <strong>Random Forest</strong> was evaluated on a grid of 5,151 DMSO/trehalose combinations (0–100% each, step 1%, sum ≤ 100%), 29 of which correspond to formulations tested experimentally. The combinations below have the highest predicted viability; the values are model predictions:</p>
 
                 <table class="table table-hover mt-3">
                     <thead class="table-light">
@@ -146,26 +146,26 @@
                         {% set treh_tied = bc.get('treh_only_tied') %}
                         {% macro span(lo, hi) %}{% if lo == hi %}{{ lo|int }}{% else %}{{ lo|int }}–{{ hi|int }}{% endif %}{% endmacro %}
                         <tr>
-                            <td><strong>Optimal Global Combined</strong></td>
+                            <td><strong>Highest predicted — combined</strong></td>
                             <td>{{ span(tied.get('dmso_range')[0], tied.get('dmso_range')[1]) }}</td>
                             <td>{{ span(tied.get('trehalose_range')[0], tied.get('trehalose_range')[1]) }}</td>
                             <td class="text-success fw-bold">{{ tied.get('viability') }}%</td>
                         </tr>
                         <tr>
-                            <td><strong>Optimal DMSO Alone</strong></td>
+                            <td><strong>Highest predicted — DMSO alone</strong></td>
                             <td>{{ span(dmso_tied.get('dmso_range')[0], dmso_tied.get('dmso_range')[1]) }}</td>
                             <td>0</td>
                             <td class="text-success fw-bold">{{ dmso_tied.get('viability') }}%</td>
                         </tr>
                         <tr>
-                            <td><strong>Optimal Trehalose Alone</strong></td>
+                            <td><strong>Highest predicted — trehalose alone</strong></td>
                             <td>0</td>
                             <td>{{ span(treh_tied.get('trehalose_range')[0], treh_tied.get('trehalose_range')[1]) }}</td>
                             <td class="text-warning fw-bold">{{ treh_tied.get('viability') }}%</td>
                         </tr>
                     </tbody>
                 </table>
-                <p class="text-muted small mb-0">The Random Forest predicts by constant regions, so each optimum above is a plateau of equally-ranked grid combinations (step 1%), not a single point: {{ tied.get('combinations')|length }} combinations tie for the global optimum, {{ dmso_tied.get('combinations')|length }} for DMSO alone and {{ treh_tied.get('combinations')|length }} for trehalose alone. Each is reported as a range rather than one arbitrarily-chosen member. Values derived from a systematic search across all concentration combinations within the experimental range of the training data.</p>
+                <p class="text-muted small mb-0">The Random Forest predicts by constant regions, so each maximum above is a plateau of grid combinations (step 1%) tied at the same predicted value, not a single point: {{ tied.get('combinations')|length }} combinations tie for the combined maximum, {{ dmso_tied.get('combinations')|length }} for DMSO alone and {{ treh_tied.get('combinations')|length }} for trehalose alone. Each is reported as a range rather than one arbitrarily-chosen member.</p>
             </div>
         </div>
     </div>

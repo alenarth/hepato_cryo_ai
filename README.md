@@ -1,8 +1,7 @@
 # HepatoCryoAI
 
 A web application that predicts post-thaw viability of cryopreserved HepG2
-hepatocytes from the concentrations of two cryoprotectants, DMSO and
-trehalose.
+cells from the concentrations of two cryoprotectants, DMSO and trehalose.
 
 ## Scientific context
 
@@ -11,17 +10,20 @@ alternatives to liver transplantation: cells routinely lose viability and
 function after thawing, and the choice of cryoprotectant concentrations has
 a large, non-linear effect on the outcome. This project is built on 206
 experimental observations of HepG2 cell viability across a grid of DMSO and
-trehalose concentrations. From that data, it trains two independent
-regression models -- a Random Forest and a small neural network -- and
-serves both through a web interface so that a given combination of
+trehalose concentrations. From that data, it trains two distinct regression
+algorithms on the same samples -- a Random Forest and a small neural
+network -- and serves both through a web interface so that a given combination of
 concentrations can be evaluated before running a wet-lab experiment.
 
 ## Models and performance
 
 Both models take only the two raw concentrations, `% DMSO` and `TREHALOSE`,
-as input. No polynomial or other hand-engineered features are used.
+as input. No polynomial or other hand-engineered features are used. The
+neural network's output layer is linear, so its raw output is not bounded;
+the application limits the displayed prediction to the physical range of
+viability, 0-100%. RMSE values are in percentage points (pp).
 
-| Model | R² (test) | RMSE (test) | R² (5-fold CV) |
+| Model | R² (test) | RMSE (test, pp) | R² (5-fold CV) |
 |---|---|---|---|
 | Random Forest | 0.9840 | 4.60 | 0.9598 |
 | Neural Network (ANN) | 0.9818 | 4.92 | 0.9643 |
@@ -37,7 +39,9 @@ numbers above are read directly from `metrics.json`.
 ## Methodology
 
 The 206 samples are split 80/20 with a fixed seed into 164 train+validation
-samples and 42 test samples, held out and evaluated exactly once. For the
+samples and 42 test samples, held out from training and model selection.
+The same external partition was used to report the performance of every
+model compared and in the neural network's seed-stability check. For the
 neural network, the 164 train+validation samples are further split into 123
 for fitting and 41 for validation (early stopping and learning-rate
 scheduling). Five-fold cross-validation is run over the 164 train+validation
@@ -121,8 +125,13 @@ hepato_cryo_ai/
 ## Reproducibility notes
 
 All random seeds are fixed (Python, NumPy, PyTorch, and scikit-learn where
-applicable), and training runs on CPU rather than GPU for bit-for-bit
-reproducibility. `metrics.json` is the single source of truth: every number
+applicable), and training runs on CPU with PyTorch's deterministic algorithms
+enabled. The fixed seeds determine the train/test split, the fit/validation
+split, the cross-validation folds, the Random Forest's bootstrap samples, the
+network's weight initialization and its mini-batch order, so every run of the
+notebooks trains on the same partitions from the same starting point.
+Dependency versions are pinned in `requirements.txt` and
+`requirements-dev.txt`. `metrics.json` is the single source of truth: every number
 shown by the web application and reported in the paper is read from it
 directly, with no hardcoded fallback values in the application code or
 templates.

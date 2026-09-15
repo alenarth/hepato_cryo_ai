@@ -83,33 +83,20 @@ def test_example_prediction_matches_metrics_json():
 
 
 def test_dataset_size_comes_from_metrics_json():
-    """Both pages that describe the dataset must report the sample count that
-    metrics.json declares, never a number baked into a template."""
+    """The page that describes the dataset must report the sample count and
+    split sizes that metrics.json declares, never a number baked into a template."""
     with open(os.path.join(ROOT, "metrics.json"), encoding="utf-8") as f:
         metrics = json.load(f)
-    n_total = metrics["dataset"]["n_total"]
-    excluded_before = metrics["dataset"]["excluded_samples"]["dataset_size_before"]
+    ds = metrics["dataset"]
 
     import app as app_module
     client = app_module.app.test_client()
 
     html_lab = client.get("/lab-data").get_data(as_text=True)
-    assert str(n_total) in html_lab, f"/lab-data does not report n_total={n_total}"
-
-    # The pre-exclusion count may only appear where the page explains the
-    # exclusion itself ("reduced from 216 to 206"), never as a live dataset size.
-    stale = [
-        f"{excluded_before} experimental observations",
-        f"all {excluded_before}",
-        f"/{excluded_before} rows",
-    ]
-    for phrase in stale:
-        assert phrase not in html_lab, f"/lab-data still describes the dataset as {phrase!r}"
-
-    excl = metrics["dataset"]["excluded_samples"]
-    assert str(excl["count"]) in html_lab, "/lab-data does not report the excluded-sample count"
-    assert excl["criterion"] in html_lab, "/lab-data does not state the exclusion criterion"
-    print(f"PASS: /lab-data reports {n_total} samples and the exclusion note from metrics.json")
+    assert str(ds["n_total"]) in html_lab, f"/lab-data does not report n_total={ds['n_total']}"
+    assert str(ds["n_trainval"]) in html_lab, f"/lab-data does not report n_trainval={ds['n_trainval']}"
+    assert str(ds["n_test"]) in html_lab, f"/lab-data does not report n_test={ds['n_test']}"
+    print(f"PASS: /lab-data reports {ds['n_total']} samples and the split sizes from metrics.json")
 
 
 if __name__ == "__main__":

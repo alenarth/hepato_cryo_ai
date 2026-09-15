@@ -7,18 +7,6 @@
     "n_val": 41,
     "n_test": 42,
     "split_seed": 42,
-    "excluded_samples": {
-      "count": 10,
-      "criterion": "% DMSO == 2.0",
-      "original_index_range": [
-        1,
-        10
-      ],
-      "date": "2026-09-04",
-      "reason": "Provenance check concluded these measurements were not produced by this research group and that the experimental conditions under which they were obtained are neither known nor documented. Excluded in full by decision of the authors responsible for the experiments. INDEX values of the remaining rows were not renumbered, preserving traceability to the bench spreadsheets.",
-      "dataset_size_before": 216,
-      "dataset_size_after": 206
-    },
     "note": "Split identical across 01_random_forest.ipynb, 02_neural_network.ipynb, 03_model_comparison.ipynb and 04_baselines.ipynb (train_test_split, test_size=0.2, random_state=42; the NN further splits the 164 train+validation samples into 123 fit / 41 validation, test_size=0.25, random_state=42)."
   },
   "random_forest": {

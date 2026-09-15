@@ -50,19 +50,6 @@ samples for both models. The neural network's regularization configuration
 search scored on validation loss only -- the test set is never used for
 model selection.
 
-### Dataset provenance
-
-10 samples recorded at 2% DMSO (original `INDEX` 1-10) were removed on
-2026-09-04, taking the dataset from 216 to 206 samples. A provenance check
-concluded that those measurements were not produced by this research group
-and that the conditions under which they were obtained are neither known nor
-documented, so they could not be attested and were excluded in full by the
-authors responsible for the experiments. The `INDEX` column of the remaining
-rows was not renumbered, so each row remains traceable to the original bench
-spreadsheets; the previous CSV is preserved in the git history. All models
-were retrained from scratch and every derived result recomputed --
-see `RESULTS_SUMMARY.md`.
-
 ## Running the application
 
 ```bash

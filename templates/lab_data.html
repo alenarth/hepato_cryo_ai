@@ -36,16 +36,10 @@
 
             <h6 class="fw-bold mb-2">Dataset composition</h6>
 
-            {% set excl = dataset.get('excluded_samples') %}
-
             <p class="mb-0 small text-justify">The models on this page were trained on
-            {{ dataset.get('n_total') }} HepG2 observations. Samples of undocumented provenance were
-            excluded from the dataset: {{ excl.get('count') }} measurements matching
-            <code>{{ excl.get('criterion') }}</code> were removed, reducing the dataset from
-            {{ excl.get('dataset_size_before') }} to {{ excl.get('dataset_size_after') }} samples.
-            The origin and experimental conditions of those measurements could not be established.
-            The original <code>INDEX</code> values of the remaining rows were left unchanged, so every
-            record remains traceable to the source bench records.</p>
+            {{ dataset.get('n_total') }} HepG2 observations of post-thaw viability, measured across
+            DMSO and trehalose concentrations: {{ dataset.get('n_trainval') }} observations for
+            training and cross-validation and {{ dataset.get('n_test') }} held out as the test set.</p>
 
         </div>
 

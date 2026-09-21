@@ -56,7 +56,7 @@ single point. Each row below is therefore reported as a range.
 
 ## Neural Network (PyTorch → NumPy export; features: raw `% DMSO`, `TREHALOSE`)
 
-Architecture: `2 -> 128 -> 64 -> 32 -> 1 (ReLU)`, Adam (lr=1e-3),
+Architecture: `2 -> 128 -> 64 -> 32 -> 1 (ReLU nas camadas ocultas, saída linear)`, Adam (lr=1e-3),
 `ReduceLROnPlateau(factor=0.5, patience=30, min_lr=1e-6)`, MSE loss, batch_size=32,
 max 2000 epochs, early stopping on validation loss. The output layer is linear, so the raw
 network output is not bounded; the application limits the displayed prediction to the physical
@@ -99,9 +99,9 @@ loss ~6–13) than the BatchNorm-free ones (std ~52–63).
 
 Per-fold CV R²: 0.9488 / 0.9595 / 0.9615 / 0.9731 / 0.9785. The `StandardScaler` is refit inside each fold.
 
-The configuration was fixed on validation loss before the test set was scored. The same external
-partition (42 samples) was used to report the performance of all compared models and in the
-seed-stability check below. Test R² = 0.9818 is above the 0.85 sanity threshold.
+The configuration was fixed on validation loss before the test set was scored. The same held-out
+test partition, split by observation (42 samples), was used to report the performance of all
+compared models and in the seed-stability check below. Test R² = 0.9818 is above the 0.85 sanity threshold.
 
 **Seed-stability check** (control only, not a headline result; seeds
 [0, 1, 2, 42, 123]): 0: 0.9825, 1: 0.9741, 2: 0.9757, 42: 0.9818, 123: 0.9772.
@@ -141,7 +141,7 @@ layer, so NumPy inference remains a plain sequence of affine layers with ReLU.
 | Random Forest | 0.9840 | 4.6043 | 0.9598 |
 | Neural Network (ANN) | 0.9818 | 4.9177 | 0.9643 |
 | XGBoost | 0.9814 | 4.9602 | 0.9627 |
-| SVR (raw) | 0.6485 | 21.5835 | 0.3417 |
+| SVR (raw) | 0.6485 | 21.5835 | 0.3460 |
 | Polynomial regression (degree 2) | 0.5823 | 23.5275 | 0.3654 |
 | Linear regression | 0.5217 | 25.1770 | 0.2890 |
 

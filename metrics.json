@@ -229,7 +229,7 @@
       "% DMSO",
       "TREHALOSE"
     ],
-    "architecture": "2 -> 128 -> 64 -> 32 -> 1 (ReLU)",
+    "architecture": "2 -> 128 -> 64 -> 32 -> 1 (ReLU nas camadas ocultas, saída linear)",
     "winning_config": {
       "use_bn": true,
       "dropout": 0.0,
@@ -390,7 +390,7 @@
     "svr": {
       "r2_test": 0.6485,
       "rmse_test": 21.5835,
-      "r2_cv": 0.3417
+      "r2_cv": 0.346
     }
   },
   "baselines": {

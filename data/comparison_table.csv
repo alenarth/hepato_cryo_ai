@@ -2,6 +2,6 @@
 Random Forest,0.984,4.6043,0.9598
 Neural Network (ANN),0.9818,4.9177,0.9643
 XGBoost,0.9814,4.9602,0.9627
-SVR (raw),0.6485,21.5835,0.3417
+SVR (raw),0.6485,21.5835,0.346
 Polynomial Regression (deg=2),0.5823,23.5275,0.3654
 Linear Regression (raw),0.5217,25.177,0.289

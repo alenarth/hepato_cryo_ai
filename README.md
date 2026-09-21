@@ -28,7 +28,7 @@ viability, 0-100%. RMSE values are in percentage points (pp).
 | Random Forest | 0.9840 | 4.60 | 0.9598 |
 | Neural Network (ANN) | 0.9818 | 4.92 | 0.9643 |
 | XGBoost | 0.9814 | 4.96 | 0.9627 |
-| SVR | 0.6485 | 21.58 | 0.3417 |
+| SVR | 0.6485 | 21.58 | 0.3460 |
 | Polynomial Regression (deg 2) | 0.5823 | 23.53 | 0.3654 |
 | Linear Regression | 0.5217 | 25.18 | 0.2890 |
 
@@ -40,8 +40,9 @@ numbers above are read directly from `metrics.json`.
 
 The 206 samples are split 80/20 with a fixed seed into 164 train+validation
 samples and 42 test samples, held out from training and model selection.
-The same external partition was used to report the performance of every
-model compared and in the neural network's seed-stability check. For the
+The same held-out test partition, split by observation, was used to report
+the performance of every model compared and in the neural network's
+seed-stability check. For the
 neural network, the 164 train+validation samples are further split into 123
 for fitting and 41 for validation (early stopping and learning-rate
 scheduling). Five-fold cross-validation is run over the 164 train+validation

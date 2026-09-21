@@ -4,11 +4,18 @@ This file is the bridge between the code (notebooks, `metrics.json`) and the pap
 All numbers below are read directly from `metrics.json`, generated on 2026-09-04.
 Do not hand-edit numbers here without regenerating `metrics.json` from the notebooks first.
 
-Dataset: **206 samples** (HepG2). Split: 164 train+validation /
+Dataset: **206 analyzed samples** (HepG2). Split: 164 train+validation /
 42 test (`test_size=0.2, random_state=42`), identical across every
 notebook. For the neural network, the 164 train+validation samples are further
 split into 123 fit / 41 validation
 (`test_size=0.25, random_state=42`).
+
+## Sample exclusion
+
+The raw file `data/raw/hepg2.csv` holds 216 observations. Ten measurements at 2% DMSO (original INDEX 1–10) were excluded before modeling: they were not collected in our laboratory, and 2% DMSO is not a concentration used in our experimental protocols.
+The 206 remaining observations (original `INDEX` 11–216) are used in every notebook; the filter
+is applied in code immediately after the CSV is read, and it is recorded in `metrics.json`
+(`dataset.excluded_samples`).
 
 ## Anchor values (must not change without investigation)
 
@@ -56,7 +63,7 @@ single point. Each row below is therefore reported as a range.
 
 ## Neural Network (PyTorch → NumPy export; features: raw `% DMSO`, `TREHALOSE`)
 
-Architecture: `2 -> 128 -> 64 -> 32 -> 1 (ReLU nas camadas ocultas, saída linear)`, Adam (lr=1e-3),
+Architecture: `2 -> 128 -> 64 -> 32 -> 1 (ReLU on hidden layers, linear output)`, Adam (lr=1e-3),
 `ReduceLROnPlateau(factor=0.5, patience=30, min_lr=1e-6)`, MSE loss, batch_size=32,
 max 2000 epochs, early stopping on validation loss. The output layer is linear, so the raw
 network output is not bounded; the application limits the displayed prediction to the physical

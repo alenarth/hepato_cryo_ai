@@ -42,7 +42,7 @@ def get_metrics():
     """
     global _metrics_cache
     if _metrics_cache is None:
-        with open(_METRICS_PATH, "r") as f:
+        with open(_METRICS_PATH, "r", encoding="utf-8") as f:
             _metrics_cache = json.load(f)
     return _metrics_cache
 

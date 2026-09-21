@@ -7,6 +7,17 @@
     "n_val": 41,
     "n_test": 42,
     "split_seed": 42,
+    "excluded_samples": {
+      "count": 10,
+      "original_index_range": [
+        1,
+        10
+      ],
+      "dmso_level": 2.0,
+      "dataset_size_before": 216,
+      "dataset_size_after": 206,
+      "criterion": "Ten measurements at 2% DMSO (original INDEX 1–10) were excluded before modeling: they were not collected in our laboratory, and 2% DMSO is not a concentration used in our experimental protocols."
+    },
     "note": "Split identical across 01_random_forest.ipynb, 02_neural_network.ipynb, 03_model_comparison.ipynb and 04_baselines.ipynb (train_test_split, test_size=0.2, random_state=42; the NN further splits the 164 train+validation samples into 123 fit / 41 validation, test_size=0.25, random_state=42)."
   },
   "random_forest": {
@@ -229,7 +240,7 @@
       "% DMSO",
       "TREHALOSE"
     ],
-    "architecture": "2 -> 128 -> 64 -> 32 -> 1 (ReLU nas camadas ocultas, saída linear)",
+    "architecture": "2 -> 128 -> 64 -> 32 -> 1 (ReLU on hidden layers, linear output)",
     "winning_config": {
       "use_bn": true,
       "dropout": 0.0,

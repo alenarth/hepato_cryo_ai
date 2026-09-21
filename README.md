@@ -8,9 +8,12 @@ cells from the concentrations of two cryoprotectants, DMSO and trehalose.
 Cryopreservation of human hepatocytes is a bottleneck for cell-based
 alternatives to liver transplantation: cells routinely lose viability and
 function after thawing, and the choice of cryoprotectant concentrations has
-a large, non-linear effect on the outcome. This project is built on 206
+a large, non-linear effect on the outcome. This project is built on
 experimental observations of HepG2 cell viability across a grid of DMSO and
-trehalose concentrations. From that data, it trains two distinct regression
+trehalose concentrations: the raw file `data/raw/hepg2.csv` holds 216
+observations. Ten measurements at 2% DMSO (original INDEX 1–10) were excluded before modeling: they were not collected in our laboratory, and 2% DMSO is not a concentration used in our experimental protocols. The remaining 206 observations are the
+analyzed dataset; the filter is applied in code immediately after the CSV is
+read, in every notebook. From that data, it trains two distinct regression
 algorithms on the same samples -- a Random Forest and a small neural
 network -- and serves both through a web interface so that a given combination of
 concentrations can be evaluated before running a wet-lab experiment.
@@ -101,7 +104,7 @@ hepato_cryo_ai/
 │   ├── nn_model.pth          # PyTorch weights (reference/audit only)
 │   └── random_forest_model.pkl  # scikit-learn model (reference/audit only)
 ├── data/
-│   ├── raw/hepg2.csv         # the 206 experimental observations
+│   ├── raw/hepg2.csv         # raw data: 216 observations (206 analyzed)
 │   ├── comparison_table.csv  # model comparison table
 │   └── hyperparameters.csv   # hyperparameters for every model
 ├── notebooks/                # analysis notebooks, numbered by execution order

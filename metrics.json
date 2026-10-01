@@ -1,122 +1,115 @@
 {
-  "generated_at": "2026-09-04T09:44:03",
+  "generated_at": "2026-10-01T18:08:24",
   "dataset": {
-    "n_total": 206,
-    "n_trainval": 164,
-    "n_train_fit": 123,
-    "n_val": 41,
-    "n_test": 42,
+    "source": "data/raw/hepg2.csv, built from the laboratory spreadsheet by data/build_dataset.py; INDEX is the spreadsheet INDEX.",
+    "n_total": 235,
+    "origins": [
+      {
+        "origin": "base_original",
+        "label": "the original laboratory database",
+        "n": 147,
+        "index_range": [
+          118,
+          251
+        ]
+      },
+      {
+        "origin": "maio_2025",
+        "label": "the DMSO experiments of May 2025",
+        "n": 33,
+        "index_range": [
+          252,
+          284
+        ]
+      },
+      {
+        "origin": "dez_2025_trealose",
+        "label": "the trehalose experiments of December 2025",
+        "n": 39,
+        "index_range": [
+          285,
+          323
+        ]
+      },
+      {
+        "origin": "dez_2025_dmso_trealose",
+        "label": "the DMSO + trehalose experiments of December 2025",
+        "n": 16,
+        "index_range": [
+          324,
+          339
+        ]
+      }
+    ],
+    "n_formulations": 35,
+    "n_trainval": 188,
+    "n_train_fit": 141,
+    "n_val": 47,
+    "n_test": 47,
     "split_seed": 42,
-    "excluded_samples": {
-      "count": 10,
-      "original_index_range": [
-        1,
-        10
-      ],
-      "dmso_level": 2.0,
-      "dataset_size_before": 216,
-      "dataset_size_after": 206,
-      "criterion": "Ten measurements at 2% DMSO (original INDEX 1–10) were excluded before modeling: they were not collected in our laboratory, and 2% DMSO is not a concentration used in our experimental protocols."
-    },
-    "note": "Split identical across 01_random_forest.ipynb, 02_neural_network.ipynb, 03_model_comparison.ipynb and 04_baselines.ipynb (train_test_split, test_size=0.2, random_state=42; the NN further splits the 164 train+validation samples into 123 fit / 41 validation, test_size=0.25, random_state=42)."
+    "note": "Split identical across 01_random_forest.ipynb, 02_neural_network.ipynb, 03_model_comparison.ipynb and 04_baselines.ipynb (train_test_split, test_size=0.2, random_state=42; the NN further splits the 188 train+validation samples into 141 fit / 47 validation, test_size=0.25, random_state=42)."
   },
   "random_forest": {
     "features": [
       "% DMSO",
       "TREHALOSE"
     ],
-    "r2_test": 0.984,
-    "rmse_test": 4.6043,
-    "cv_r2_mean": 0.9598,
-    "cv_r2_std": 0.0131,
-    "cv_rmse_mean": 6.9691,
-    "cv_rmse_std": 1.081,
+    "r2_test": 0.9266,
+    "rmse_test": 10.4366,
+    "cv_r2_mean": 0.8121,
+    "cv_r2_std": 0.0542,
+    "cv_rmse_mean": 15.4086,
+    "cv_rmse_std": 1.8908,
     "best_combinations": {
       "global": {
-        "dmso": 13.0,
+        "dmso": 2.0,
         "trehalose": 0.0,
-        "viability": 92.67
+        "viability": 95.2
       },
       "dmso_only": {
-        "dmso": 13.0,
+        "dmso": 2.0,
         "trehalose": 0.0,
-        "viability": 92.67
+        "viability": 95.2
       },
       "treh_only": {
         "dmso": 0.0,
         "trehalose": 16.0,
-        "viability": 77.57
+        "viability": 43.71
       },
       "global_tied": {
         "note": "The Random Forest predicts by constant regions, so this optimum is a plateau, not a single point. Every combination listed here (grid step 1%, sum <= 100%) is tied at the exact same predicted value. Report as a range, not a single arbitrarily-chosen point.",
         "dmso_range": [
-          13.0,
-          17.0
+          2.0,
+          3.0
         ],
         "trehalose_range": [
           0.0,
           2.0
         ],
-        "viability": 92.67,
+        "viability": 95.2,
         "combinations": [
           {
-            "dmso": 13.0,
+            "dmso": 2.0,
             "trehalose": 0.0
           },
           {
-            "dmso": 13.0,
+            "dmso": 2.0,
             "trehalose": 1.0
           },
           {
-            "dmso": 13.0,
+            "dmso": 2.0,
             "trehalose": 2.0
           },
           {
-            "dmso": 14.0,
+            "dmso": 3.0,
             "trehalose": 0.0
           },
           {
-            "dmso": 14.0,
+            "dmso": 3.0,
             "trehalose": 1.0
           },
           {
-            "dmso": 14.0,
-            "trehalose": 2.0
-          },
-          {
-            "dmso": 15.0,
-            "trehalose": 0.0
-          },
-          {
-            "dmso": 15.0,
-            "trehalose": 1.0
-          },
-          {
-            "dmso": 15.0,
-            "trehalose": 2.0
-          },
-          {
-            "dmso": 16.0,
-            "trehalose": 0.0
-          },
-          {
-            "dmso": 16.0,
-            "trehalose": 1.0
-          },
-          {
-            "dmso": 16.0,
-            "trehalose": 2.0
-          },
-          {
-            "dmso": 17.0,
-            "trehalose": 0.0
-          },
-          {
-            "dmso": 17.0,
-            "trehalose": 1.0
-          },
-          {
-            "dmso": 17.0,
+            "dmso": 3.0,
             "trehalose": 2.0
           }
         ]
@@ -124,33 +117,21 @@
       "dmso_only_tied": {
         "note": "The Random Forest predicts by constant regions, so this optimum is a plateau, not a single point. Every combination listed here (grid step 1%, sum <= 100%) is tied at the exact same predicted value. Report as a range, not a single arbitrarily-chosen point.",
         "dmso_range": [
-          13.0,
-          17.0
+          2.0,
+          3.0
         ],
         "trehalose_range": [
           0.0,
           0.0
         ],
-        "viability": 92.67,
+        "viability": 95.2,
         "combinations": [
           {
-            "dmso": 13.0,
+            "dmso": 2.0,
             "trehalose": 0.0
           },
           {
-            "dmso": 14.0,
-            "trehalose": 0.0
-          },
-          {
-            "dmso": 15.0,
-            "trehalose": 0.0
-          },
-          {
-            "dmso": 16.0,
-            "trehalose": 0.0
-          },
-          {
-            "dmso": 17.0,
+            "dmso": 3.0,
             "trehalose": 0.0
           }
         ]
@@ -165,7 +146,7 @@
           16.0,
           25.0
         ],
-        "viability": 77.57,
+        "viability": 43.71,
         "combinations": [
           {
             "dmso": 0.0,
@@ -215,18 +196,29 @@
       "random_state": 42
     },
     "feature_importance": {
-      "% DMSO": 0.7346,
-      "TREHALOSE": 0.2654
+      "% DMSO": 0.8411,
+      "TREHALOSE": 0.1589
     },
     "permutation_importance": {
       "% DMSO": {
-        "mean": 1.9637,
-        "std": 0.1637
+        "mean": 1.7236,
+        "std": 0.1708
       },
       "TREHALOSE": {
-        "mean": 0.6033,
-        "std": 0.0637
+        "mean": 0.3159,
+        "std": 0.029
       }
+    },
+    "residuals_test_mean": -0.4892,
+    "residuals_test_std": 10.5378,
+    "learning_curve": {
+      "max_train_size": 150,
+      "train_r2_at_max": 0.8831,
+      "cv_r2_at_max": 0.8111
+    },
+    "grid": {
+      "n_points": 5151,
+      "n_tested_formulations_on_grid": 35
     }
   },
   "random_forest_numpy_export_validation": {
@@ -247,7 +239,7 @@
       "weight_decay": 0.0,
       "patience": 100
     },
-    "search_winner_mean_val_loss": 64.9415,
+    "search_winner_mean_val_loss": 308.9223,
     "hyperparameter_search": {
       "note": "Selected by mean validation MSE across seeds [0, 42]; the test set is never used for model selection. Grid: batch_norm x dropout x weight_decay, patience fixed at 100.",
       "seeds": [
@@ -262,101 +254,101 @@
           "dropout": 0.0,
           "weight_decay": 0.0,
           "patience": 100,
-          "mean_val_loss": 64.9415,
-          "std_val_loss": 12.5285,
-          "mean_best_epoch": 523.0
+          "mean_val_loss": 308.9223,
+          "std_val_loss": 3.1858,
+          "mean_best_epoch": 250.0
         },
         {
           "batch_norm": true,
           "dropout": 0.0,
           "weight_decay": 0.0001,
           "patience": 100,
-          "mean_val_loss": 65.403,
-          "std_val_loss": 6.6202,
-          "mean_best_epoch": 510.0
-        },
-        {
-          "batch_norm": false,
-          "dropout": 0.0,
-          "weight_decay": 0.0001,
-          "patience": 100,
-          "mean_val_loss": 75.106,
-          "std_val_loss": 52.1675,
-          "mean_best_epoch": 451.0
-        },
-        {
-          "batch_norm": false,
-          "dropout": 0.0,
-          "weight_decay": 0.0,
-          "patience": 100,
-          "mean_val_loss": 83.7266,
-          "std_val_loss": 63.1763,
-          "mean_best_epoch": 591.0
-        },
-        {
-          "batch_norm": true,
-          "dropout": 0.2,
-          "weight_decay": 0.0,
-          "patience": 100,
-          "mean_val_loss": 101.9852,
-          "std_val_loss": 4.9899,
-          "mean_best_epoch": 410.0
+          "mean_val_loss": 313.2115,
+          "std_val_loss": 3.9618,
+          "mean_best_epoch": 283.5
         },
         {
           "batch_norm": true,
           "dropout": 0.2,
           "weight_decay": 0.0001,
           "patience": 100,
-          "mean_val_loss": 104.2489,
-          "std_val_loss": 8.4137,
-          "mean_best_epoch": 410.0
+          "mean_val_loss": 396.5253,
+          "std_val_loss": 10.8859,
+          "mean_best_epoch": 279.0
         },
         {
-          "batch_norm": false,
+          "batch_norm": true,
           "dropout": 0.2,
           "weight_decay": 0.0,
           "patience": 100,
-          "mean_val_loss": 105.9507,
-          "std_val_loss": 24.1701,
-          "mean_best_epoch": 511.0
+          "mean_val_loss": 396.694,
+          "std_val_loss": 9.4424,
+          "mean_best_epoch": 312.0
         },
         {
           "batch_norm": false,
           "dropout": 0.2,
           "weight_decay": 0.0001,
           "patience": 100,
-          "mean_val_loss": 153.3032,
-          "std_val_loss": 9.392,
-          "mean_best_epoch": 266.5
+          "mean_val_loss": 441.2784,
+          "std_val_loss": 7.5612,
+          "mean_best_epoch": 275.5
+        },
+        {
+          "batch_norm": false,
+          "dropout": 0.0,
+          "weight_decay": 0.0001,
+          "patience": 100,
+          "mean_val_loss": 445.6766,
+          "std_val_loss": 3.8466,
+          "mean_best_epoch": 208.0
+        },
+        {
+          "batch_norm": false,
+          "dropout": 0.0,
+          "weight_decay": 0.0,
+          "patience": 100,
+          "mean_val_loss": 451.6117,
+          "std_val_loss": 2.6855,
+          "mean_best_epoch": 231.5
+        },
+        {
+          "batch_norm": false,
+          "dropout": 0.2,
+          "weight_decay": 0.0,
+          "patience": 100,
+          "mean_val_loss": 451.8621,
+          "std_val_loss": 8.3474,
+          "mean_best_epoch": 275.5
         }
       ]
     },
-    "r2_fit": 0.9707,
-    "rmse_fit": 6.165,
-    "r2_val": 0.9538,
-    "rmse_val": 7.4888,
-    "r2_test": 0.9818,
-    "rmse_test": 4.9177,
-    "best_epoch": 523,
-    "residuals_test_mean": -0.6783,
-    "residuals_test_std": 4.8707,
-    "cv_r2_mean": 0.9643,
-    "cv_r2_std": 0.0105,
-    "cv_rmse_mean": 6.6049,
-    "cv_rmse_std": 0.9289,
+    "r2_fit": 0.7789,
+    "rmse_fit": 17.7065,
+    "r2_val": 0.7314,
+    "rmse_val": 17.6402,
+    "r2_test": 0.8735,
+    "rmse_test": 13.6988,
+    "best_epoch": 264,
+    "residuals_test_mean": -0.2621,
+    "residuals_test_std": 13.6963,
+    "cv_r2_mean": 0.7707,
+    "cv_r2_std": 0.0413,
+    "cv_rmse_mean": 17.2208,
+    "cv_rmse_std": 1.2983,
     "cv_per_fold_r2": [
-      0.9488,
-      0.9595,
-      0.9615,
-      0.9731,
-      0.9785
+      0.7239,
+      0.8267,
+      0.8111,
+      0.7584,
+      0.7333
     ],
     "cv_per_fold_rmse": [
-      7.9389,
-      6.9595,
-      6.835,
-      6.1535,
-      5.1378
+      16.9551,
+      17.2106,
+      15.2782,
+      17.2998,
+      19.3603
     ],
     "seed_stability_check": {
       "seeds": [
@@ -367,53 +359,543 @@
         123
       ],
       "r2_per_seed": [
-        0.9825,
-        0.9741,
-        0.9757,
-        0.9818,
-        0.9772
+        0.8612,
+        0.8488,
+        0.8604,
+        0.8735,
+        0.8656
       ],
-      "r2_mean": 0.9782,
-      "r2_std": 0.0033,
+      "r2_mean": 0.8619,
+      "r2_std": 0.008,
       "sensitive_to_seed": false,
       "note": "Control check only, not a headline result."
     },
     "numpy_export_validation": {
       "grid_size": 5151,
-      "max_abs_diff": 7.713606220249858e-05,
+      "max_abs_diff": 7.397580027657114e-05,
       "passed": true
     }
   },
+  "eda": {
+    "dmso_levels": [
+      0.0,
+      2.0,
+      5.0,
+      10.0,
+      15.0,
+      20.0,
+      25.0,
+      30.0,
+      50.0,
+      60.0,
+      70.0,
+      80.0,
+      90.0,
+      100.0
+    ],
+    "trehalose_levels": [
+      0.0,
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      40.0,
+      50.0,
+      60.0,
+      70.0,
+      80.0,
+      90.0,
+      100.0
+    ],
+    "correlation_with_viability": {
+      "% DMSO": -0.401,
+      "TREHALOSE": -0.152,
+      "% SFB": 0.593
+    },
+    "composition": {
+      "n_dmso_trehalose_sfb_sum_100": 227,
+      "n_with_culture_medium": 8,
+      "culture_medium_levels": [
+        90.0
+      ]
+    },
+    "viability_distribution": {
+      "n_below_10": 102,
+      "n_at_least_90": 33
+    },
+    "dmso_alone_n_per_level_range": [
+      6,
+      16
+    ],
+    "trehalose_alone_by_origin": {
+      "base_original": {
+        "n": 30,
+        "levels": [
+          20.0,
+          30.0,
+          40.0,
+          50.0,
+          80.0,
+          100.0
+        ],
+        "n_per_level_range": [
+          5,
+          5
+        ],
+        "mean_range": [
+          0.0,
+          78.01
+        ]
+      },
+      "dez_2025_trealose": {
+        "n": 39,
+        "levels": [
+          5.0,
+          10.0,
+          20.0,
+          30.0,
+          40.0,
+          50.0,
+          60.0,
+          70.0,
+          80.0,
+          90.0,
+          100.0
+        ],
+        "n_per_level_range": [
+          3,
+          4
+        ],
+        "mean_range": [
+          1.9,
+          22.21
+        ]
+      }
+    },
+    "combined_vs_dmso_alone": [
+      {
+        "dmso": 5.0,
+        "dmso_alone_mean": 91.35,
+        "trehalose_levels": [
+          5.0,
+          10.0,
+          20.0,
+          30.0,
+          50.0,
+          80.0
+        ],
+        "with_trehalose_mean_range": [
+          39.49,
+          68.95
+        ]
+      },
+      {
+        "dmso": 10.0,
+        "dmso_alone_mean": 91.67,
+        "trehalose_levels": [
+          5.0,
+          10.0,
+          20.0,
+          30.0
+        ],
+        "with_trehalose_mean_range": [
+          71.88,
+          81.05
+        ]
+      }
+    ],
+    "formulations": [
+      {
+        "dmso": 0.0,
+        "trehalose": 0.0,
+        "n": 16,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "base_original": 16
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 5.0,
+        "n": 4,
+        "mean": 4.02,
+        "sd": 5.56,
+        "n_by_origin": {
+          "dez_2025_trealose": 4
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 10.0,
+        "n": 4,
+        "mean": 6.25,
+        "sd": 7.49,
+        "n_by_origin": {
+          "dez_2025_trealose": 4
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 20.0,
+        "n": 9,
+        "mean": 44.18,
+        "sd": 40.24,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_trealose": 4
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 30.0,
+        "n": 8,
+        "mean": 41.78,
+        "sd": 29.49,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_trealose": 3
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 40.0,
+        "n": 8,
+        "mean": 37.42,
+        "sd": 28.03,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_trealose": 3
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 50.0,
+        "n": 8,
+        "mean": 35.37,
+        "sd": 23.82,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_trealose": 3
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 60.0,
+        "n": 3,
+        "mean": 6.64,
+        "sd": 8.34,
+        "n_by_origin": {
+          "dez_2025_trealose": 3
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 70.0,
+        "n": 3,
+        "mean": 22.21,
+        "sd": 22.12,
+        "n_by_origin": {
+          "dez_2025_trealose": 3
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 80.0,
+        "n": 9,
+        "mean": 15.95,
+        "sd": 7.94,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_trealose": 4
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 90.0,
+        "n": 4,
+        "mean": 11.43,
+        "sd": 8.11,
+        "n_by_origin": {
+          "dez_2025_trealose": 4
+        }
+      },
+      {
+        "dmso": 0.0,
+        "trehalose": 100.0,
+        "n": 9,
+        "mean": 4.7,
+        "sd": 7.08,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_trealose": 4
+        }
+      },
+      {
+        "dmso": 2.0,
+        "trehalose": 0.0,
+        "n": 10,
+        "mean": 95.2,
+        "sd": 1.46,
+        "n_by_origin": {
+          "base_original": 10
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 0.0,
+        "n": 11,
+        "mean": 91.35,
+        "sd": 9.29,
+        "n_by_origin": {
+          "base_original": 9,
+          "maio_2025": 2
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 5.0,
+        "n": 2,
+        "mean": 64.69,
+        "sd": 11.48,
+        "n_by_origin": {
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 10.0,
+        "n": 2,
+        "mean": 66.2,
+        "sd": 4.14,
+        "n_by_origin": {
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 20.0,
+        "n": 7,
+        "mean": 67.78,
+        "sd": 8.92,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 30.0,
+        "n": 7,
+        "mean": 68.95,
+        "sd": 6.55,
+        "n_by_origin": {
+          "base_original": 5,
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 50.0,
+        "n": 5,
+        "mean": 54.75,
+        "sd": 10.38,
+        "n_by_origin": {
+          "base_original": 5
+        }
+      },
+      {
+        "dmso": 5.0,
+        "trehalose": 80.0,
+        "n": 5,
+        "mean": 39.49,
+        "sd": 4.91,
+        "n_by_origin": {
+          "base_original": 5
+        }
+      },
+      {
+        "dmso": 10.0,
+        "trehalose": 0.0,
+        "n": 10,
+        "mean": 91.67,
+        "sd": 3.33,
+        "n_by_origin": {
+          "base_original": 10
+        }
+      },
+      {
+        "dmso": 10.0,
+        "trehalose": 5.0,
+        "n": 2,
+        "mean": 79.69,
+        "sd": 4.79,
+        "n_by_origin": {
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 10.0,
+        "trehalose": 10.0,
+        "n": 2,
+        "mean": 71.88,
+        "sd": 10.74,
+        "n_by_origin": {
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 10.0,
+        "trehalose": 20.0,
+        "n": 2,
+        "mean": 81.05,
+        "sd": 2.62,
+        "n_by_origin": {
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 10.0,
+        "trehalose": 30.0,
+        "n": 2,
+        "mean": 73.09,
+        "sd": 19.33,
+        "n_by_origin": {
+          "dez_2025_dmso_trealose": 2
+        }
+      },
+      {
+        "dmso": 15.0,
+        "trehalose": 0.0,
+        "n": 9,
+        "mean": 91.26,
+        "sd": 5.15,
+        "n_by_origin": {
+          "base_original": 9
+        }
+      },
+      {
+        "dmso": 20.0,
+        "trehalose": 0.0,
+        "n": 10,
+        "mean": 71.04,
+        "sd": 7.81,
+        "n_by_origin": {
+          "base_original": 10
+        }
+      },
+      {
+        "dmso": 25.0,
+        "trehalose": 0.0,
+        "n": 8,
+        "mean": 36.74,
+        "sd": 9.9,
+        "n_by_origin": {
+          "base_original": 8
+        }
+      },
+      {
+        "dmso": 30.0,
+        "trehalose": 0.0,
+        "n": 15,
+        "mean": 2.05,
+        "sd": 1.44,
+        "n_by_origin": {
+          "base_original": 15
+        }
+      },
+      {
+        "dmso": 50.0,
+        "trehalose": 0.0,
+        "n": 10,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "base_original": 10
+        }
+      },
+      {
+        "dmso": 60.0,
+        "trehalose": 0.0,
+        "n": 6,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "maio_2025": 6
+        }
+      },
+      {
+        "dmso": 70.0,
+        "trehalose": 0.0,
+        "n": 6,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "maio_2025": 6
+        }
+      },
+      {
+        "dmso": 80.0,
+        "trehalose": 0.0,
+        "n": 6,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "maio_2025": 6
+        }
+      },
+      {
+        "dmso": 90.0,
+        "trehalose": 0.0,
+        "n": 6,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "maio_2025": 6
+        }
+      },
+      {
+        "dmso": 100.0,
+        "trehalose": 0.0,
+        "n": 7,
+        "mean": 0.0,
+        "sd": 0.0,
+        "n_by_origin": {
+          "maio_2025": 7
+        }
+      }
+    ]
+  },
   "example_prediction_10dmso_0trehalose": {
-    "neural_network_pytorch": 89.6854,
-    "neural_network_numpy": 89.6854,
+    "neural_network_pytorch": 89.4392,
+    "neural_network_numpy": 89.4392,
     "dmso": 10.0,
     "trehalose": 0.0,
-    "random_forest": 91.2245,
-    "random_forest_numpy": 91.2245
+    "random_forest": 91.4842,
+    "random_forest_numpy": 91.4842
   },
   "alternatives": {
     "xgboost": {
-      "r2_test": 0.9814,
-      "rmse_test": 4.9602,
-      "r2_cv": 0.9627
+      "r2_test": 0.9255,
+      "rmse_test": 10.515,
+      "r2_cv": 0.8074
     },
     "svr": {
-      "r2_test": 0.6485,
-      "rmse_test": 21.5835,
-      "r2_cv": 0.346
+      "r2_test": 0.0504,
+      "rmse_test": 37.5398,
+      "r2_cv": 0.0817
     }
   },
   "baselines": {
     "linear_regression": {
-      "r2_test": 0.5217,
-      "rmse_test": 25.177,
-      "r2_cv": 0.289
+      "r2_test": 0.2184,
+      "rmse_test": 34.0579,
+      "r2_cv": 0.2473
     },
     "polynomial_regression_deg2": {
-      "r2_test": 0.5823,
-      "rmse_test": 23.5275,
-      "r2_cv": 0.3654
+      "r2_test": 0.2675,
+      "rmse_test": 32.9698,
+      "r2_cv": 0.2573
     }
   }
 }

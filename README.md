@@ -10,10 +10,13 @@ alternatives to liver transplantation: cells routinely lose viability and
 function after thawing, and the choice of cryoprotectant concentrations has
 a large, non-linear effect on the outcome. This project is built on
 experimental observations of HepG2 cell viability across a grid of DMSO and
-trehalose concentrations: the raw file `data/raw/hepg2.csv` holds 216
-observations. Ten measurements at 2% DMSO (original INDEX 1–10) were excluded before modeling: they were not collected in our laboratory, and 2% DMSO is not a concentration used in our experimental protocols. The remaining 206 observations are the
-analyzed dataset; the filter is applied in code immediately after the CSV is
-read, in every notebook. From that data, it trains two distinct regression
+trehalose concentrations. The file `data/raw/hepg2.csv` holds 235
+observations, all of which are used: 147 from the original laboratory
+database, 33 from DMSO experiments of May 2025, 39 from trehalose experiments
+of December 2025 and 16 from DMSO + trehalose experiments of December 2025.
+It is built from the laboratory spreadsheet by `data/build_dataset.py`, which
+preserves the spreadsheet `INDEX` and records each observation's origin in the
+`ORIGEM` column. From that data, the project trains two distinct regression
 algorithms on the same samples -- a Random Forest and a small neural
 network -- and serves both through a web interface so that a given combination of
 concentrations can be evaluated before running a wet-lab experiment.
@@ -28,12 +31,12 @@ viability, 0-100%. RMSE values are in percentage points (pp).
 
 | Model | R² (test) | RMSE (test, pp) | R² (5-fold CV) |
 |---|---|---|---|
-| Random Forest | 0.9840 | 4.60 | 0.9598 |
-| Neural Network (ANN) | 0.9818 | 4.92 | 0.9643 |
-| XGBoost | 0.9814 | 4.96 | 0.9627 |
-| SVR | 0.6485 | 21.58 | 0.3460 |
-| Polynomial Regression (deg 2) | 0.5823 | 23.53 | 0.3654 |
-| Linear Regression | 0.5217 | 25.18 | 0.2890 |
+| Random Forest | 0.9266 | 10.44 | 0.8121 |
+| XGBoost | 0.9255 | 10.52 | 0.8074 |
+| Neural Network (ANN) | 0.8735 | 13.70 | 0.7707 |
+| Polynomial Regression (deg 2) | 0.2675 | 32.97 | 0.2573 |
+| Linear Regression | 0.2184 | 34.06 | 0.2473 |
+| SVR | 0.0504 | 37.54 | 0.0817 |
 
 XGBoost, Polynomial Regression, SVR and Linear Regression are included as
 baselines / alternative-algorithm comparisons, not as deployed models. All
@@ -41,14 +44,14 @@ numbers above are read directly from `metrics.json`.
 
 ## Methodology
 
-The 206 samples are split 80/20 with a fixed seed into 164 train+validation
-samples and 42 test samples, held out from training and model selection.
+The 235 samples are split 80/20 with a fixed seed into 188 train+validation
+samples and 47 test samples, held out from training and model selection.
 The same held-out test partition, split by observation, was used to report
 the performance of every model compared and in the neural network's
 seed-stability check. For the
-neural network, the 164 train+validation samples are further split into 123
-for fitting and 41 for validation (early stopping and learning-rate
-scheduling). Five-fold cross-validation is run over the 164 train+validation
+neural network, the 188 train+validation samples are further split into 141
+for fitting and 47 for validation (early stopping and learning-rate
+scheduling). Five-fold cross-validation is run over the 188 train+validation
 samples for both models. The neural network's regularization configuration
 (batch normalization, dropout, weight decay) was selected by a small grid
 search scored on validation loss only -- the test set is never used for
@@ -74,6 +77,14 @@ requires the development dependencies:
 
 ```bash
 pip install -r requirements-dev.txt
+```
+
+`data/raw/hepg2.csv` is committed. To rebuild it from the laboratory sources
+(kept out of version control in `data/source/`):
+
+```bash
+python data/build_dataset.py --planilha data/source/planilha_criopreservacao_dez2025.xlsx \
+    --base-original data/source/hepg2_base_original.csv --saida data/raw/hepg2.csv
 ```
 
 Then run the notebooks in `notebooks/` in numeric order:
@@ -104,7 +115,9 @@ hepato_cryo_ai/
 │   ├── nn_model.pth          # PyTorch weights (reference/audit only)
 │   └── random_forest_model.pkl  # scikit-learn model (reference/audit only)
 ├── data/
-│   ├── raw/hepg2.csv         # raw data: 216 observations (206 analyzed)
+│   ├── build_dataset.py      # builds raw/hepg2.csv from the laboratory spreadsheet
+│   ├── source/               # laboratory sources (not version-controlled)
+│   ├── raw/hepg2.csv         # dataset: 235 observations, all analyzed
 │   ├── comparison_table.csv  # model comparison table
 │   └── hyperparameters.csv   # hyperparameters for every model
 ├── notebooks/                # analysis notebooks, numbered by execution order

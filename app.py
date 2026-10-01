@@ -155,6 +155,7 @@ def lab_data():
         nn_metrics=metrics["neural_network"],
         rf_metrics=metrics["random_forest"],
         dataset=metrics["dataset"],
+        eda=metrics["eda"],
     )
 
 

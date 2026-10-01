@@ -36,13 +36,14 @@
 
             <h6 class="fw-bold mb-2">Dataset composition</h6>
 
-            {% set excl = dataset.get('excluded_samples') %}
-
-            <p class="mb-0 small text-justify">The raw dataset holds {{ excl.get('dataset_size_before') }}
-            HepG2 observations of post-thaw viability, measured across DMSO and trehalose concentrations.
-            {{ excl.get('criterion') }} The models on this page were trained on the
-            {{ dataset.get('n_total') }} remaining observations: {{ dataset.get('n_trainval') }} for
-            training and cross-validation and {{ dataset.get('n_test') }} held out as the test set.</p>
+            <p class="mb-0 small text-justify">The dataset holds {{ dataset.get('n_total') }}
+            HepG2 observations of post-thaw viability, measured across {{ dataset.get('n_formulations') }}
+            DMSO and trehalose formulations:
+            {% for o in dataset.get('origins') %}{{ o.get('n') }} from {{ o.get('label') }}{% if loop.revindex == 2 %} and {% elif not loop.last %}, {% endif %}{% endfor %}.
+            It was built from the laboratory spreadsheet by <code>data/build_dataset.py</code>, which
+            preserves the spreadsheet <code>INDEX</code>. Every observation is used by the models on this
+            page: {{ dataset.get('n_trainval') }} for training and cross-validation and
+            {{ dataset.get('n_test') }} held out as the test set.</p>
 
         </div>
 
@@ -124,7 +125,9 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO shows moderate negative correlation with viability (r = −0.562), consistent with dose-dependent toxicity. Trehalose shows near-zero linear correlation (r = 0.048), reflecting a non-linear relationship that both models capture directly from the raw concentration values, without any hand-engineered polynomial features. SFB's positive correlation (r = 0.622) is associated with the composition of the formulations: SFB is the balance/diluent component (DMSO + Trehalose + SFB = 100% in 198/{{ dataset.get('n_total') }} rows; 8 rows = 10%) and was not included among the predictors.</p>
+                        {% set corr = eda.get('correlation_with_viability') %}
+                        {% set comp = eda.get('composition') %}
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO is negatively correlated with viability (r = {{ '%.3f' % corr.get('% DMSO') }}) and trehalose weakly negatively correlated (r = {{ '%.3f' % corr.get('TREHALOSE') }}). Pearson's r measures only linear association, and the response to DMSO is not linear (see Figure 1 in the Empirical Foundation section); both models use the two raw concentrations directly, without hand-engineered polynomial features. SFB's positive correlation (r = {{ '%.3f' % corr.get('% SFB') }}) follows from the composition of the formulations: SFB is the balance component (DMSO + trehalose + SFB = 100% in {{ comp.get('n_dmso_trehalose_sfb_sum_100') }}/{{ dataset.get('n_total') }} rows; the other {{ comp.get('n_with_culture_medium') }} rows contain {% for lv in comp.get('culture_medium_levels') %}{{ lv|int }}%{% if not loop.last %} or {% endif %}{% endfor %} culture medium) and was not included among the predictors.</p>
 
 
 
@@ -176,7 +179,8 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> The viability distribution is bimodal, with peaks near 0% and near 90–100%, reflecting the binary nature of cryopreservation outcomes: cells largely either survive the process well or do not survive it at all, with comparatively few intermediate results.</p>
+                        {% set vd = eda.get('viability_distribution') %}
+                        <p class="small text-justify"><strong>Interpretation:</strong> {{ vd.get('n_below_10') }} of the {{ dataset.get('n_total') }} observations have a post-thaw viability below 10% and {{ vd.get('n_at_least_90') }} have a viability of 90% or more; the remaining {{ dataset.get('n_total') - vd.get('n_below_10') - vd.get('n_at_least_90') }} are spread across intermediate values.</p>
 
 
 
@@ -328,7 +332,10 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Lighter areas are the concentration regions with the highest predicted viability. The toxicity threshold is visible where higher cryoprotectant concentrations lead to a sharp drop in predicted viability.</p>
+                        {% set bc = rf_metrics.get('best_combinations') %}
+                        {% set g_tied = bc.get('global_tied') %}
+                        {% set t_tied = bc.get('treh_only_tied') %}
+                        <p class="small text-justify"><strong>Interpretation:</strong> Lighter areas are the concentration regions with the highest predicted viability. The highest predicted value, {{ g_tied.get('viability') }}%, is a plateau covering {{ g_tied.get('dmso_range')[0]|int }}–{{ g_tied.get('dmso_range')[1]|int }}% DMSO and {{ g_tied.get('trehalose_range')[0]|int }}–{{ g_tied.get('trehalose_range')[1]|int }}% trehalose. Without DMSO, the predicted viability does not exceed {{ t_tied.get('viability') }}% at any trehalose concentration.</p>
 
 
 
@@ -388,7 +395,8 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> The training and cross-validation curves converge as the training set size increases.</p>
+                        {% set lc = rf_metrics.get('learning_curve') %}
+                        <p class="small text-justify"><strong>Interpretation:</strong> The cross-validation R² rises as the training set grows. At the largest training size ({{ lc.get('max_train_size') }} samples), the training R² is {{ '%.3f' % lc.get('train_r2_at_max') }} and the cross-validation R² is {{ '%.3f' % lc.get('cv_r2_at_max') }}.</p>
 
 
 
@@ -440,7 +448,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Test residuals are scattered around zero, with a mean close to zero, across the range of predicted viability.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> The test residuals have a mean of {{ '%.2f' % rf_metrics.get('residuals_test_mean') }} pp (standard deviation {{ '%.2f' % rf_metrics.get('residuals_test_std') }} pp).</p>
 
 
 
@@ -500,7 +508,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO dominates (~{{ '%.0f' % (rf_metrics.get('feature_importance').get('% DMSO') * 100) }}%) the model's predictions, consistent with its strong dose-dependent toxicity. Trehalose contributes ~{{ '%.0f' % (rf_metrics.get('feature_importance').get('TREHALOSE') * 100) }}%, reflecting its complementary but non-linear role in cryopreservation outcomes.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> DMSO accounts for ~{{ '%.0f' % (rf_metrics.get('feature_importance').get('% DMSO') * 100) }}% of the Random Forest's impurity-based (Gini) importance and trehalose for ~{{ '%.0f' % (rf_metrics.get('feature_importance').get('TREHALOSE') * 100) }}%. Importance measures how much each concentration is used by the model to split the data; it does not indicate whether a cryoprotectant raises or lowers viability.</p>
 
 
 
@@ -584,7 +592,7 @@
 
 
 
-                        <p>A deep neural network was trained using PyTorch on the two raw cryoprotectant concentrations (% DMSO, trehalose) directly — no polynomial feature engineering. The non-linear toxicity relationship is captured by the network itself rather than by hand-built features. The architecture uses 3 hidden layers (128→64→32 neurons) with ReLU activations, regularized by the configuration selected on validation loss alone: {% set wc = nn_metrics.get('winning_config') %}{% if wc.get('use_bn') %}Batch Normalization{% else %}no Batch Normalization{% endif %}, {% if wc.get('dropout') > 0 %}dropout {{ wc.get('dropout') }}{% else %}no dropout{% endif %}, {% if wc.get('weight_decay') > 0 %}weight decay (L2, {{ wc.get('weight_decay') }}){% else %}no weight decay{% endif %}, and early stopping on a dedicated validation set. The output layer is a single linear neuron, so the raw network output is not bounded; the predictions shown by the application are limited to the physical range of viability, 0–100%. Training happens in PyTorch; in production, predictions are served by a NumPy-only reimplementation of the trained network, so the deployed application does not depend on PyTorch.</p>
+                        <p>A deep neural network was trained using PyTorch on the two raw cryoprotectant concentrations (% DMSO, trehalose) directly — no polynomial feature engineering. Any non-linearity in the relationship between concentration and viability is learned by the network itself rather than supplied through hand-built features. The architecture uses 3 hidden layers (128→64→32 neurons) with ReLU activations, regularized by the configuration selected on validation loss alone: {% set wc = nn_metrics.get('winning_config') %}{% if wc.get('use_bn') %}Batch Normalization{% else %}no Batch Normalization{% endif %}, {% if wc.get('dropout') > 0 %}dropout {{ wc.get('dropout') }}{% else %}no dropout{% endif %}, {% if wc.get('weight_decay') > 0 %}weight decay (L2, {{ wc.get('weight_decay') }}){% else %}no weight decay{% endif %}, and early stopping on a dedicated validation set. The output layer is a single linear neuron, so the raw network output is not bounded; the predictions shown by the application are limited to the physical range of viability, 0–100%. Training happens in PyTorch; in production, predictions are served by a NumPy-only reimplementation of the trained network, so the deployed application does not depend on PyTorch.</p>
 
 
 
@@ -792,7 +800,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> The training and validation loss curves converge over the epochs. The green dashed line marks the best epoch, where the model weights were preserved.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Training and validation loss decrease together and then level off. The green dashed line marks the epoch with the lowest validation loss (epoch {{ nn_metrics.get('best_epoch') }}), whose weights were kept; training stopped after {{ nn_metrics.get('winning_config').get('patience') }} further epochs without improvement.</p>
 
 
 
@@ -852,7 +860,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> The test residuals have a mean of {{ '%.2f' % nn_metrics.get('residuals_test_mean') }} pp (standard deviation {{ '%.2f' % nn_metrics.get('residuals_test_std') }} pp), close to zero. The histogram shows the error distribution.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> The test residuals have a mean of {{ '%.2f' % nn_metrics.get('residuals_test_mean') }} pp (standard deviation {{ '%.2f' % nn_metrics.get('residuals_test_std') }} pp). The histogram shows the error distribution.</p>
 
 
 
@@ -917,7 +925,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Both algorithms, trained on the same dataset, show strong predictive performance. The Random Forest reaches a slightly higher test R², while the Neural Network — trained on the same two raw concentrations, without polynomial feature engineering — reaches comparable results. Agreement between the two describes algorithmic consistency: two distinct algorithms fitted to the same data produce similar predictions.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> For this figure, both algorithms are fitted on the same {{ dataset.get('n_train_fit') }} samples (the network's fit set) and evaluated on the same {{ dataset.get('n_test') }} test samples; each panel title shows that model's test R². With the full {{ dataset.get('n_trainval') }} training samples, the deployed Random Forest reaches a test R² of {{ '%.3f' % rf_metrics.get('r2_test') }}, and the neural network reaches {{ '%.3f' % nn_metrics.get('r2_test') }}.</p>
 
 
 
@@ -1017,7 +1025,7 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of HepG2 cells frozen with increasing DMSO concentrations. Cells were frozen with 0–100% DMSO, thawed after 7 days, and viability assessed via trypan blue exclusion and MTT assays. Data represent mean ± SD from 6–15 samples per concentration (n=1–3 independent experiments). Statistical analysis used two-way ANOVA with Sidak post-test. Asterisks denote p&lt;0.0001; "ns" indicates non-significant.</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of HepG2 cells frozen with increasing DMSO concentrations. Cells were frozen with 0–100% DMSO, thawed after 7 days, and viability assessed via trypan blue exclusion and MTT assays. Data represent mean ± SD (n=1–3 independent experiments); the dataset holds {{ eda.get('dmso_alone_n_per_level_range')[0] }}–{{ eda.get('dmso_alone_n_per_level_range')[1] }} observations per DMSO concentration without trehalose. Statistical analysis used two-way ANOVA with Sidak post-test. Asterisks denote p&lt;0.0001; "ns" indicates non-significant.</p>
 
 
 
@@ -1065,7 +1073,11 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of HepG2 cells frozen with increasing trehalose concentrations. Cells were frozen with 20–100% trehalose, thawed after 7 days, and viability assessed using trypan blue exclusion and MTT. Data show mean ± SD from 4–5 samples per concentration (n=1–2 independent experiments).</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of HepG2 cells frozen with increasing trehalose concentrations. Cells were frozen with 20–100% trehalose, thawed after 7 days, and viability assessed using trypan blue exclusion and MTT. {% set t_orig = eda.get('trehalose_alone_by_origin').get('base_original') %}{% set t_n = t_orig.get('n_per_level_range') %}Data show mean ± SD from {% if t_n[0] == t_n[1] %}{{ t_n[0] }}{% else %}{{ t_n[0] }}–{{ t_n[1] }}{% endif %} samples per concentration (n=1–2 independent experiments).</p>
+
+                        {% set t_2025 = eda.get('trehalose_alone_by_origin').get('dez_2025_trealose') %}
+                        {% set origin_labels = {} %}{% for o in dataset.get('origins') %}{% set _ = origin_labels.update({o.get('origin'): o.get('label')}) %}{% endfor %}
+                        <p class="small text-justify"><strong>Scope of this figure:</strong> it shows the {{ t_orig.get('n') }} trehalose-only observations from {{ origin_labels.get('base_original') }}. The dataset also contains {{ t_2025.get('n') }} trehalose-only observations from {{ origin_labels.get('dez_2025_trealose') }} ({% for lv in t_2025.get('levels') %}{{ lv|int }}{% if not loop.last %}, {% endif %}{% endfor %}% trehalose), which are not shown here; their mean viability per concentration ranged from {{ t_2025.get('mean_range')[0] }}% to {{ t_2025.get('mean_range')[1] }}%.</p>
 
 
 
@@ -1121,7 +1133,9 @@
 
 
 
-                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of HepG2 cells frozen with combinations of dimethyl sulfoxide and trehalose. Cells were frozen with 5% or 10% DMSO (D) and 5–30% trehalose (T). After 7 days, cells were thawed and viability was measured by trypan blue exclusion and MTT assays. Values represent mean ± SD from 2–7 samples per concentration (n=1 independent experiment).</p>
+                        <p class="small text-justify"><strong>Interpretation:</strong> Viability of HepG2 cells frozen with combinations of dimethyl sulfoxide and trehalose. Cells were frozen with 5% or 10% DMSO (D) and 5–30% trehalose (T). After 7 days, cells were thawed and viability was measured by trypan blue exclusion and MTT assays. Values represent mean ± SD from 2–7 samples per concentration.</p>
+
+                        <p class="small text-justify"><strong>Comparison with DMSO alone:</strong> {% for c in eda.get('combined_vs_dmso_alone') %}with {{ c.get('dmso')|int }}% DMSO, the mean viability in the dataset is {{ c.get('dmso_alone_mean') }}% without trehalose and {{ c.get('with_trehalose_mean_range')[0] }}–{{ c.get('with_trehalose_mean_range')[1] }}% with {% for lv in c.get('trehalose_levels') %}{{ lv|int }}{% if not loop.last %}, {% endif %}{% endfor %}% trehalose{% if not loop.last %}; {% endif %}{% endfor %}.</p>
 
 
 

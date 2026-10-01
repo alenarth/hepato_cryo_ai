@@ -36,4 +36,4 @@ Neural Network (ANN),batch_size,32,
 Neural Network (ANN),loss_function,MSELoss,
 Neural Network (ANN),device,cpu,forced CPU for reproducibility
 Neural Network (ANN),seed,42,random + numpy + torch + DataLoader generator
-Neural Network (ANN),best_epoch,523,from deterministic training run
+Neural Network (ANN),best_epoch,264,from deterministic training run
